@@ -138,14 +138,16 @@ export default function Admin() {
 
   const createProductMutation = useMutation({
     mutationFn: async (productData: ProductFormData) => {
-      // Convert form data to product format
+      // Convert form data to product format with proper validation
       const product = {
         ...productData,
         imageUrls: productImages.length > 0 ? productImages : [],
         sizes: productData.sizes ? productData.sizes.split(',').map(size => size.trim()) : [],
         colors: productData.colors ? productData.colors.split(',').map(color => color.trim()) : [],
         price: productData.price.toString(),
-        originalPrice: productData.originalPrice || undefined,
+        originalPrice: productData.originalPrice && productData.originalPrice.trim() !== "" ? productData.originalPrice : undefined,
+        stock: productData.stock || 0,
+        categoryId: productData.categoryId || null,
       };
       return await apiRequest("POST", "/api/products", product);
     },
