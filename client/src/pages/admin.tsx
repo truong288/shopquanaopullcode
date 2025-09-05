@@ -138,6 +138,11 @@ export default function Admin() {
 
   const createProductMutation = useMutation({
     mutationFn: async (productData: ProductFormData) => {
+      // Validate required fields first
+      if (!productData.price || productData.price.trim() === "") {
+        throw new Error("Giá bán là bắt buộc");
+      }
+      
       // Convert form data to product format with proper validation
       const product = {
         ...productData,
@@ -147,8 +152,10 @@ export default function Admin() {
         price: productData.price.toString(),
         originalPrice: productData.originalPrice && productData.originalPrice.trim() !== "" ? productData.originalPrice : undefined,
         stock: productData.stock || 0,
-        categoryId: productData.categoryId || null,
+        categoryId: productData.categoryId && productData.categoryId.trim() !== "" ? productData.categoryId : undefined,
       };
+      
+      console.log("Sending product data:", product);
       return await apiRequest("POST", "/api/products", product);
     },
     onSuccess: () => {

@@ -186,12 +186,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
+      console.log("Raw request body:", JSON.stringify(req.body, null, 2));
+      
       const productData = insertProductSchema.parse(req.body);
+      console.log("Parsed product data:", JSON.stringify(productData, null, 2));
+      
       const product = await storage.createProduct(productData);
       res.json(product);
     } catch (error) {
       console.error("Error creating product:", error);
       if (error instanceof z.ZodError) {
+        console.log("Zod validation errors:", error.errors);
         return res.status(400).json({ message: "Invalid product data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create product" });
