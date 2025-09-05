@@ -46,7 +46,8 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 5 }: I
         formData.append('image', file);
 
         const response = await apiRequest("POST", "/api/upload/image", formData);
-        return response.url;
+        const result = await response.json();
+        return result.url;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
