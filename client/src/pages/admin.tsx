@@ -51,6 +51,8 @@ export default function Admin() {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null);
+  const [showOrderDetail, setShowOrderDetail] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -102,6 +104,20 @@ export default function Admin() {
     queryKey: ["/api/orders"],
     enabled: isAuthenticated && user?.role === 'admin',
   });
+
+  const handleViewOrderDetail = async (orderId: string) => {
+    try {
+      const orderDetail = await apiRequest(`/api/orders/${orderId}`);
+      setSelectedOrder(orderDetail);
+      setShowOrderDetail(true);
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể tải thông tin đơn hàng",
+        variant: "destructive",
+      });
+    }
+  };
 
   const { data: users } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
@@ -839,6 +855,7 @@ export default function Admin() {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => handleViewOrderDetail(order.id)}
                                 data-testid={`button-view-order-${order.id}`}
                               >
                                 Chi tiết
@@ -908,6 +925,111 @@ export default function Admin() {
           )}
         </div>
       </div>
+
+      {/* Order Detail Modal */}
+      <Dialog open={showOrderDetail} onOpenChange={setShowOrderDetail}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Chi Tiết Đơn Hàng #{selectedOrder?.id.slice(0, 8)}</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="space-y-6">
+              {/* Customer Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Thông Tin Khách Hàng</h3>
+                  <div className="space-y-1 text-sm">
+                    <p><span className="font-medium">Họ tên:</span> {selectedOrder.customerName}</p>
+                    <p><span className="font-medium">Điện thoại:</span> {selectedOrder.customerPhone}</p>
+                    {selectedOrder.customerEmail && (
+                      <p><span className="font-medium">Email:</span> {selectedOrder.customerEmail}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold mb-2">Thông Tin Đơn Hàng</h3>
+                  <div className="space-y-1 text-sm">
+                    <p><span className="font-medium">Ngày đặt:</span> {new Date(selectedOrder.createdAt!).toLocaleDateString('vi-VN')}</p>
+                    <p><span className="font-medium">Trạng thái:</span> 
+                      <Badge className="ml-2">
+                        {selectedOrder.status === 'pending' && 'Chờ xác nhận'}
+                        {selectedOrder.status === 'confirmed' && 'Đã xác nhận'}
+                        {selectedOrder.status === 'processing' && 'Đang xử lý'}
+                        {selectedOrder.status === 'shipped' && 'Đang giao'}
+                        {selectedOrder.status === 'delivered' && 'Đã giao'}
+                        {selectedOrder.status === 'cancelled' && 'Đã hủy'}
+                      </Badge>
+                    </p>
+                    <p><span className="font-medium">Phương thức:</span> {selectedOrder.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shipping Address */}
+              <div>
+                <h3 className="font-semibold mb-2">Địa Chỉ Giao Hàng</h3>
+                <p className="text-sm">
+                  {selectedOrder.shippingAddress}, {selectedOrder.shippingWard}, {selectedOrder.shippingDistrict}, {selectedOrder.shippingProvince}
+                </p>
+                {selectedOrder.notes && (
+                  <p className="text-sm mt-1"><span className="font-medium">Ghi chú:</span> {selectedOrder.notes}</p>
+                )}
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <h3 className="font-semibold mb-2">Sản Phẩm Đặt Mua</h3>
+                <div className="space-y-3">
+                  {selectedOrder.items?.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                      <img 
+                        src={item.product.imageUrls?.split(',')[0] || "https://images.unsplash.com/photo-1441986300917-64674bd600d8"} 
+                        alt={item.product.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h4 className="font-medium">{item.product.name}</h4>
+                        <div className="text-sm text-muted-foreground">
+                          {item.size && <span>Size: {item.size}</span>}
+                          {item.color && <span className="ml-2">Màu: {item.color}</span>}
+                        </div>
+                        <div className="text-sm">
+                          <span>Số lượng: {item.quantity}</span>
+                          <span className="ml-3 font-medium">{parseFloat(item.price).toLocaleString()}₫</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">
+                          {(parseFloat(item.price) * item.quantity).toLocaleString()}₫
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Order Summary */}
+              <div className="border-t pt-4">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Tạm tính:</span>
+                    <span>{parseFloat(selectedOrder.subtotal).toLocaleString()}₫</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Phí giao hàng:</span>
+                    <span>{parseFloat(selectedOrder.shippingFee).toLocaleString()}₫</span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-base border-t pt-2">
+                    <span>Tổng cộng:</span>
+                    <span className="text-primary">{parseFloat(selectedOrder.total).toLocaleString()}₫</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
