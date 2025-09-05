@@ -332,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const createOrderSchema = z.object({
-    order: insertOrderSchema,
+    order: insertOrderSchema.omit({ userId: true }),
     items: z.array(insertOrderItemSchema.omit({ orderId: true }))
   });
 
