@@ -34,7 +34,15 @@ const productFormSchema = insertProductSchema.extend({
   imageUrls: z.string().optional(),
   sizes: z.string().optional(),
   colors: z.string().optional(),
-});
+}).transform((data) => ({
+  ...data,
+  description: data.description || "",
+  originalPrice: data.originalPrice || "",
+  categoryId: data.categoryId || "",
+  stock: data.stock || 0,
+  isActive: data.isActive ?? true,
+  isFeatured: data.isFeatured ?? false,
+}));
 
 type ProductFormData = z.infer<typeof productFormSchema>;
 
