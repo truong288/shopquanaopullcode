@@ -17,6 +17,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { useAuth } from "@/hooks/useAuth";
 import { insertProductSchema, type Product, type Order, type User, type Category } from "@shared/schema";
 import { z } from "zod";
+import ImageUpload from "@/components/image-upload";
 
 type OrderWithItems = Order & { 
   items: Array<{ 
@@ -41,6 +42,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -139,7 +141,7 @@ export default function Admin() {
       // Convert form data to product format
       const product = {
         ...productData,
-        imageUrls: productData.imageUrls ? productData.imageUrls.split(',').map(url => url.trim()) : [],
+        imageUrls: productImages.length > 0 ? productImages : [],
         sizes: productData.sizes ? productData.sizes.split(',').map(size => size.trim()) : [],
         colors: productData.colors ? productData.colors.split(',').map(color => color.trim()) : [],
         price: productData.price.toString(),
@@ -156,6 +158,7 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/products/featured"] });
       setIsProductModalOpen(false);
       productForm.reset();
+      setProductImages([]);
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -583,23 +586,14 @@ export default function Admin() {
                           />
                         </div>
 
-                        <FormField
-                          control={productForm.control}
-                          name="imageUrls"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>URL Hình Ảnh</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Nhập các URL hình ảnh, cách nhau bằng dấu phẩy"
-                                  rows={2}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div>
+                          <Label>Hình Ảnh Sản Phẩm</Label>
+                          <ImageUpload 
+                            images={productImages}
+                            onImagesChange={setProductImages}
+                            maxImages={5}
+                          />
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
@@ -682,6 +676,7 @@ export default function Admin() {
                             onClick={() => {
                               setIsProductModalOpen(false);
                               productForm.reset();
+                              setProductImages([]);
                             }}
                           >
                             Hủy

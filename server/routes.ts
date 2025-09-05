@@ -10,10 +10,82 @@ import {
   insertOrderItemSchema 
 } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import path from "path";
+import fs from "fs/promises";
+import express from "express";
+
+// Configure multer for file uploads
+const uploadsDir = path.join(process.cwd(), 'attached_assets', 'uploads');
+
+// Ensure uploads directory exists
+async function ensureUploadsDir() {
+  try {
+    await fs.access(uploadsDir);
+  } catch {
+    await fs.mkdir(uploadsDir, { recursive: true });
+  }
+}
+
+const storage_multer = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    await ensureUploadsDir();
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `product-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage: storage_multer,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimeType = allowedTypes.test(file.mimetype);
+    
+    if (mimeType && extName) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Chỉ chấp nhận file ảnh (JPEG, JPG, PNG, GIF, WebP)'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+
+  // Serve uploaded files statically
+  app.use('/api/uploads', express.static(uploadsDir));
+
+  // File upload route
+  app.post('/api/upload/image', isAuthenticated, upload.single('image'), (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'Không có file nào được tải lên' });
+      }
+
+      // Generate URL path for the uploaded file
+      const fileUrl = `/api/uploads/${req.file.filename}`;
+      
+      res.json({
+        message: 'Tải ảnh thành công',
+        url: fileUrl,
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ message: 'Lỗi khi tải ảnh lên' });
+    }
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
