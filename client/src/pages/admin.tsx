@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useAuth } from "@/hooks/useAuth";
-import type { Product, Order, User, Category } from "@shared/schema";
+import { insertProductSchema, type Product, type Order, type User, type Category } from "@shared/schema";
+import { z } from "zod";
 
 type OrderWithItems = Order & { 
   items: Array<{ 
@@ -25,6 +29,14 @@ type OrderWithItems = Order & {
   }> 
 };
 
+const productFormSchema = insertProductSchema.extend({
+  imageUrls: z.string().optional(),
+  sizes: z.string().optional(),
+  colors: z.string().optional(),
+});
+
+type ProductFormData = z.infer<typeof productFormSchema>;
+
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -32,6 +44,24 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading, user } = useAuth();
+
+  const productForm = useForm<ProductFormData>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      description: "",
+      price: "",
+      originalPrice: "",
+      categoryId: "",
+      imageUrls: "",
+      sizes: "",
+      colors: "",
+      stock: 0,
+      isActive: true,
+      isFeatured: false,
+    },
+  });
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
@@ -104,6 +134,49 @@ export default function Admin() {
     },
   });
 
+  const createProductMutation = useMutation({
+    mutationFn: async (productData: ProductFormData) => {
+      // Convert form data to product format
+      const product = {
+        ...productData,
+        imageUrls: productData.imageUrls ? productData.imageUrls.split(',').map(url => url.trim()) : [],
+        sizes: productData.sizes ? productData.sizes.split(',').map(size => size.trim()) : [],
+        colors: productData.colors ? productData.colors.split(',').map(color => color.trim()) : [],
+        price: productData.price.toString(),
+        originalPrice: productData.originalPrice || undefined,
+      };
+      return await apiRequest("POST", "/api/products", product);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Tạo thành công",
+        description: "Sản phẩm đã được tạo.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products/featured"] });
+      setIsProductModalOpen(false);
+      productForm.reset();
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Lỗi",
+        description: "Không thể tạo sản phẩm.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: string) => {
       return await apiRequest("DELETE", `/api/products/${productId}`);
@@ -134,6 +207,17 @@ export default function Admin() {
       });
     },
   });
+
+  const onSubmitProduct = (data: ProductFormData) => {
+    // Generate slug from name if not provided
+    if (!data.slug) {
+      data.slug = data.name.toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-');
+    }
+    createProductMutation.mutate(data);
+  };
 
   if (isLoading) {
     return (
@@ -358,16 +442,260 @@ export default function Admin() {
                       Thêm Sản Phẩm
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>
                         {editingProduct ? "Chỉnh Sửa Sản Phẩm" : "Thêm Sản Phẩm Mới"}
                       </DialogTitle>
                     </DialogHeader>
-                    {/* Product form would go here */}
-                    <div className="text-center py-8 text-muted-foreground">
-                      Form sản phẩm sẽ được triển khai tại đây
-                    </div>
+                    
+                    <Form {...productForm}>
+                      <form onSubmit={productForm.handleSubmit(onSubmitProduct)} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={productForm.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Tên Sản Phẩm *</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Nhập tên sản phẩm" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={productForm.control}
+                            name="slug"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Slug (URL)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="ten-san-pham" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={productForm.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Mô Tả</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Mô tả chi tiết về sản phẩm"
+                                  rows={3}
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={productForm.control}
+                            name="price"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Giá Bán *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    placeholder="100000"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={productForm.control}
+                            name="originalPrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Giá Gốc</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    placeholder="150000"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={productForm.control}
+                            name="categoryId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Danh Mục</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Chọn danh mục" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {categories?.map((category) => (
+                                      <SelectItem key={category.id} value={category.id}>
+                                        {category.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={productForm.control}
+                            name="stock"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Số Lượng</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    placeholder="100"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={productForm.control}
+                          name="imageUrls"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>URL Hình Ảnh</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Nhập các URL hình ảnh, cách nhau bằng dấu phẩy"
+                                  rows={2}
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={productForm.control}
+                            name="sizes"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Kích Thước</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="S, M, L, XL"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={productForm.control}
+                            name="colors"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Màu Sắc</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Đỏ, Xanh, Đen, Trắng"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                          <FormField
+                            control={productForm.control}
+                            name="isActive"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2">
+                                <FormControl>
+                                  <input
+                                    type="checkbox"
+                                    checked={field.value}
+                                    onChange={field.onChange}
+                                    className="rounded border-border"
+                                  />
+                                </FormControl>
+                                <FormLabel className="!mt-0">Kích hoạt</FormLabel>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={productForm.control}
+                            name="isFeatured"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2">
+                                <FormControl>
+                                  <input
+                                    type="checkbox"
+                                    checked={field.value}
+                                    onChange={field.onChange}
+                                    className="rounded border-border"
+                                  />
+                                </FormControl>
+                                <FormLabel className="!mt-0">Sản phẩm nổi bật</FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="flex justify-end space-x-4 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              setIsProductModalOpen(false);
+                              productForm.reset();
+                            }}
+                          >
+                            Hủy
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={createProductMutation.isPending}
+                            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                          >
+                            {createProductMutation.isPending ? "Đang tạo..." : "Tạo Sản Phẩm"}
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
                   </DialogContent>
                 </Dialog>
               </div>
