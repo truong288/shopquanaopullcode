@@ -148,19 +148,19 @@ export default function Checkout() {
         total: total.toString(),
         customerName: customerInfo.fullName,
         customerPhone: customerInfo.phone,
-        customerEmail: customerInfo.email,
+        customerEmail: customerInfo.email.trim() || undefined,
         shippingAddress: shippingInfo.address,
         shippingProvince: shippingInfo.province,
         shippingDistrict: shippingInfo.district,
         shippingWard: shippingInfo.ward,
-        notes,
+        notes: notes.trim() || undefined,
       },
       items: cartItems.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
         price: item.product.price,
-        size: item.size,
-        color: item.color,
+        size: item.size || undefined,
+        color: item.color || undefined,
       })),
     };
 
