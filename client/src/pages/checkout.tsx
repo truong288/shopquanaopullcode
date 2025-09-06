@@ -21,6 +21,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { CartItem, Product } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
+import { vietnamAddressData, getDistrictsByProvince, getWardsByDistrict } from "@/data/vietnamAddressData";
 
 type CartItemWithProduct = CartItem & { product: Product };
 
@@ -43,6 +44,42 @@ export default function Checkout() {
     district: "",
     ward: "",
   });
+
+  // Available options based on selection
+  const [availableDistricts, setAvailableDistricts] = useState(getDistrictsByProvince(""));
+  const [availableWards, setAvailableWards] = useState(getWardsByDistrict("", ""));
+
+  // Handle province change
+  const handleProvinceChange = (value: string) => {
+    const newDistricts = getDistrictsByProvince(value);
+    setAvailableDistricts(newDistricts);
+    setAvailableWards([]); // Reset wards
+    setShippingInfo({
+      ...shippingInfo,
+      province: value,
+      district: "", // Reset district
+      ward: "", // Reset ward
+    });
+  };
+
+  // Handle district change  
+  const handleDistrictChange = (value: string) => {
+    const newWards = getWardsByDistrict(shippingInfo.province, value);
+    setAvailableWards(newWards);
+    setShippingInfo({
+      ...shippingInfo,
+      district: value,
+      ward: "", // Reset ward
+    });
+  };
+
+  // Handle ward change
+  const handleWardChange = (value: string) => {
+    setShippingInfo({
+      ...shippingInfo,
+      ward: value,
+    });
+  };
 
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [notes, setNotes] = useState("");
@@ -286,108 +323,17 @@ export default function Checkout() {
                         <Label htmlFor="province">Tỉnh/Thành phố *</Label>
                         <Select
                           value={shippingInfo.province}
-                          onValueChange={(value) =>
-                            setShippingInfo({
-                              ...shippingInfo,
-                              province: value,
-                            })
-                          }
+                          onValueChange={handleProvinceChange}
                         >
                           <SelectTrigger data-testid="select-province">
                             <SelectValue placeholder="Chọn tỉnh/thành" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="hanoi">Hà Nội</SelectItem>
-                            <SelectItem value="ho-chi-minh">
-                              Hồ Chí Minh
-                            </SelectItem>
-                            <SelectItem value="hai-phong">Hải Phòng</SelectItem>
-                            <SelectItem value="da-nang">Đà Nẵng</SelectItem>
-                            <SelectItem value="can-tho">Cần Thơ</SelectItem>
-                            <SelectItem value="an-giang">An Giang</SelectItem>
-                            <SelectItem value="ba-ria-vung-tau">
-                              Bà Rịa – Vũng Tàu
-                            </SelectItem>
-                            <SelectItem value="bac-giang">Bắc Giang</SelectItem>
-                            <SelectItem value="bac-kan">Bắc Kạn</SelectItem>
-                            <SelectItem value="bac-lieu">Bạc Liêu</SelectItem>
-                            <SelectItem value="bac-ninh">Bắc Ninh</SelectItem>
-                            <SelectItem value="ben-tre">Bến Tre</SelectItem>
-                            <SelectItem value="binh-dinh">Bình Định</SelectItem>
-                            <SelectItem value="binh-duong">
-                              Bình Dương
-                            </SelectItem>
-                            <SelectItem value="binh-phuoc">
-                              Bình Phước
-                            </SelectItem>
-                            <SelectItem value="binh-thuan">
-                              Bình Thuận
-                            </SelectItem>
-                            <SelectItem value="ca-mau">Cà Mau</SelectItem>
-                            <SelectItem value="cao-bang">Cao Bằng</SelectItem>
-                            <SelectItem value="dak-lak">Đắk Lắk</SelectItem>
-                            <SelectItem value="dak-nong">Đắk Nông</SelectItem>
-                            <SelectItem value="dien-bien">Điện Biên</SelectItem>
-                            <SelectItem value="dong-nai">Đồng Nai</SelectItem>
-                            <SelectItem value="dong-thap">Đồng Tháp</SelectItem>
-                            <SelectItem value="gia-lai">Gia Lai</SelectItem>
-                            <SelectItem value="ha-giang">Hà Giang</SelectItem>
-                            <SelectItem value="ha-nam">Hà Nam</SelectItem>
-                            <SelectItem value="ha-tinh">Hà Tĩnh</SelectItem>
-                            <SelectItem value="hai-duong">Hải Dương</SelectItem>
-                            <SelectItem value="hau-giang">Hậu Giang</SelectItem>
-                            <SelectItem value="hoa-binh">Hòa Bình</SelectItem>
-                            <SelectItem value="hung-yen">Hưng Yên</SelectItem>
-                            <SelectItem value="khanh-hoa">Khánh Hòa</SelectItem>
-                            <SelectItem value="kien-giang">
-                              Kiên Giang
-                            </SelectItem>
-                            <SelectItem value="kon-tum">Kon Tum</SelectItem>
-                            <SelectItem value="lai-chau">Lai Châu</SelectItem>
-                            <SelectItem value="lam-dong">Lâm Đồng</SelectItem>
-                            <SelectItem value="lang-son">Lạng Sơn</SelectItem>
-                            <SelectItem value="lao-cai">Lào Cai</SelectItem>
-                            <SelectItem value="long-an">Long An</SelectItem>
-                            <SelectItem value="nam-dinh">Nam Định</SelectItem>
-                            <SelectItem value="nghe-an">Nghệ An</SelectItem>
-                            <SelectItem value="ninh-binh">Ninh Bình</SelectItem>
-                            <SelectItem value="ninh-thuan">
-                              Ninh Thuận
-                            </SelectItem>
-                            <SelectItem value="phu-tho">Phú Thọ</SelectItem>
-                            <SelectItem value="phu-yen">Phú Yên</SelectItem>
-                            <SelectItem value="quang-binh">
-                              Quảng Bình
-                            </SelectItem>
-                            <SelectItem value="quang-nam">Quảng Nam</SelectItem>
-                            <SelectItem value="quang-ngai">
-                              Quảng Ngãi
-                            </SelectItem>
-                            <SelectItem value="quang-ninh">
-                              Quảng Ninh
-                            </SelectItem>
-                            <SelectItem value="quang-tri">Quảng Trị</SelectItem>
-                            <SelectItem value="soc-trang">Sóc Trăng</SelectItem>
-                            <SelectItem value="son-la">Sơn La</SelectItem>
-                            <SelectItem value="tay-ninh">Tây Ninh</SelectItem>
-                            <SelectItem value="thai-binh">Thái Bình</SelectItem>
-                            <SelectItem value="thai-nguyen">
-                              Thái Nguyên
-                            </SelectItem>
-                            <SelectItem value="thanh-hoa">Thanh Hóa</SelectItem>
-                            <SelectItem value="thua-thien-hue">
-                              Thừa Thiên Huế
-                            </SelectItem>
-                            <SelectItem value="tien-giang">
-                              Tiền Giang
-                            </SelectItem>
-                            <SelectItem value="tra-vinh">Trà Vinh</SelectItem>
-                            <SelectItem value="tuyen-quang">
-                              Tuyên Quang
-                            </SelectItem>
-                            <SelectItem value="vinh-long">Vĩnh Long</SelectItem>
-                            <SelectItem value="vinh-phuc">Vĩnh Phúc</SelectItem>
-                            <SelectItem value="yen-bai">Yên Bái</SelectItem>
+                            {vietnamAddressData.map((province) => (
+                              <SelectItem key={province.code} value={province.code}>
+                                {province.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -395,20 +341,18 @@ export default function Checkout() {
                         <Label htmlFor="district">Quận/Huyện *</Label>
                         <Select
                           value={shippingInfo.district}
-                          onValueChange={(value) =>
-                            setShippingInfo({
-                              ...shippingInfo,
-                              district: value,
-                            })
-                          }
+                          onValueChange={handleDistrictChange}
+                          disabled={!shippingInfo.province}
                         >
                           <SelectTrigger data-testid="select-district">
                             <SelectValue placeholder="Chọn quận/huyện" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="district1">Quận 1</SelectItem>
-                            <SelectItem value="district3">Quận 3</SelectItem>
-                            <SelectItem value="district7">Quận 7</SelectItem>
+                            {availableDistricts.map((district) => (
+                              <SelectItem key={district.code} value={district.code}>
+                                {district.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -416,17 +360,18 @@ export default function Checkout() {
                         <Label htmlFor="ward">Phường/Xã *</Label>
                         <Select
                           value={shippingInfo.ward}
-                          onValueChange={(value) =>
-                            setShippingInfo({ ...shippingInfo, ward: value })
-                          }
+                          onValueChange={handleWardChange}
+                          disabled={!shippingInfo.district}
                         >
                           <SelectTrigger data-testid="select-ward">
                             <SelectValue placeholder="Chọn phường/xã" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ward1">Phường 1</SelectItem>
-                            <SelectItem value="ward2">Phường 2</SelectItem>
-                            <SelectItem value="ward3">Phường 3</SelectItem>
+                            {availableWards.map((ward) => (
+                              <SelectItem key={ward.code} value={ward.code}>
+                                {ward.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
