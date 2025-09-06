@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import ProductModal from "./product-modal";
+import { StarRating } from "./star-rating";
 import type { Product } from "@shared/schema";
 
 interface ProductCardProps {
@@ -163,24 +164,15 @@ export default function ProductCard({ product, "data-testid": testId }: ProductC
           </div>
 
           {/* Rating */}
-          <div className="flex items-center">
-            <div className="flex text-yellow-400 text-sm">
-              {Array.from({ length: 5 }, (_, i) => {
-                const rating = parseFloat(product.rating || "0");
-                const fullStars = Math.floor(rating);
-                const hasHalfStar = rating % 1 >= 0.5;
-                
-                if (i < fullStars) {
-                  return <i key={i} className="fas fa-star"></i>;
-                } else if (i === fullStars && hasHalfStar) {
-                  return <i key={i} className="fas fa-star-half-alt"></i>;
-                } else {
-                  return <i key={i} className="far fa-star"></i>;
-                }
-              })}
-            </div>
-            <span className="text-muted-foreground text-sm ml-2">
-              ({product.reviewCount} đánh giá)
+          <div className="flex items-center justify-between">
+            <StarRating 
+              rating={parseFloat(product.rating || "0")} 
+              size="sm" 
+              showValue={true}
+              data-testid={`product-rating-${product.id}`}
+            />
+            <span className="text-muted-foreground text-xs">
+              ({product.reviewCount || 0} đánh giá)
             </span>
           </div>
 
