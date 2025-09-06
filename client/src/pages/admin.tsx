@@ -588,7 +588,7 @@ export default function Admin() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {categories?.map((category) => (
+                                    {categories?.filter(category => category.id && category.id.trim() !== '').map((category) => (
                                       <SelectItem key={category.id} value={category.id}>
                                         {category.name}
                                       </SelectItem>

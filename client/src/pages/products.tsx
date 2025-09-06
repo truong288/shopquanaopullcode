@@ -10,7 +10,7 @@ import type { Product, Category } from "@shared/schema";
 
 export default function Products() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const { data: categories } = useQuery<Category[]>({
@@ -18,7 +18,7 @@ export default function Products() {
   });
 
   const { data: products } = useQuery<Product[]>({
-    queryKey: ["/api/products", { categoryId: selectedCategory, search: searchQuery }],
+    queryKey: ["/api/products", { categoryId: selectedCategory === "all" ? "" : selectedCategory, search: searchQuery }],
   });
 
   const filteredProducts = products?.filter(product => {
@@ -48,8 +48,8 @@ export default function Products() {
                   <SelectValue placeholder="Tất cả danh mục" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tất cả danh mục</SelectItem>
-                  {categories?.map((category) => (
+                  <SelectItem value="all">Tất cả danh mục</SelectItem>
+                  {categories?.filter(category => category.id && category.id.trim() !== '').map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
