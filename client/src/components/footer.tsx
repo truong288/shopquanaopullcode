@@ -1,77 +1,99 @@
 export default function Footer() {
   return (
-    <footer className="bg-primary text-primary-foreground py-16">
+    <footer className="bg-primary text-primary-foreground py-8">
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="space-y-3">
             <div className="flex items-center space-x-2">
-              <i className="fas fa-tshirt text-2xl"></i>
-              <span className="text-2xl font-bold">ThoitrangStore</span>
+              <i className="fas fa-tshirt text-xl"></i>
+              <span className="text-xl font-bold">ThoitrangStore</span>
             </div>
-            <p className="text-primary-foreground/80">
+            <p className="text-primary-foreground/80 text-sm">
               Thời trang hiện đại với chất lượng cao và giá cả hợp lý. Tạo nên phong cách riêng của bạn.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-facebook">
-                <i className="fab fa-facebook-f text-xl"></i>
+            <div className="flex space-x-3">
+              <a href="https://facebook.com/thoitrangstore" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-facebook">
+                <i className="fab fa-facebook-f text-lg"></i>
               </a>
-              <a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-instagram">
-                <i className="fab fa-instagram text-xl"></i>
+              <a href="https://www.instagram.com/thoitrangstore" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-instagram">
+                <i className="fab fa-instagram text-lg"></i>
               </a>
-              <a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-tiktok">
-                <i className="fab fa-tiktok text-xl"></i>
+              <a href="https://www.tiktok.com/@thoitrangstore" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-tiktok">
+                <i className="fab fa-tiktok text-lg"></i>
               </a>
-              <a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-youtube">
-                <i className="fab fa-youtube text-xl"></i>
+              <a href="https://youtube.com/@thoitrangstore" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-youtube">
+                <i className="fab fa-youtube text-lg"></i>
               </a>
             </div>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Danh Mục</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Thời Trang Nữ</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Thời Trang Nam</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Phụ Kiện</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Giày Dép</a></li>
+            <h3 className="text-base font-semibold mb-3">Danh Mục</h3>
+            <ul className="space-y-1">
+              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">Thời Trang Nữ</a></li>
+              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">Thời Trang Nam</a></li>
+              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">Phụ Kiện</a></li>
+              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">Giày Dép</a></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Hỗ Trợ</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Liên Hệ</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Hướng Dẫn Mua Hàng</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Chính Sách Đổi Trả</a></li>
-              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Câu Hỏi Thường Gặp</a></li>
+            <h3 className="text-base font-semibold mb-3">Hỗ Trợ</h3>
+            <ul className="space-y-1">
+              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">Liên Hệ</a></li>
+              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">Hướng Dẫn Mua Hàng</a></li>
+              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">Chính Sách Đổi Trả</a></li>
+              <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">Câu Hỏi Thường Gặp</a></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Liên Hệ</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <i className="fas fa-map-marker-alt text-accent"></i>
-                <span className="text-primary-foreground/80">123 Đường ABC, Quận 1, TP.HCM</span>
+            <h3 className="text-base font-semibold mb-3">Liên Hệ</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <i className="fas fa-map-marker-alt text-accent text-sm"></i>
+                <span className="text-primary-foreground/80 text-sm">123 Đường ABC, Quận 1, TP.HCM</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <i className="fas fa-phone text-accent"></i>
-                <span className="text-primary-foreground/80">0123 456 789</span>
+              <div className="flex items-center space-x-2">
+                <i className="fas fa-phone text-accent text-sm"></i>
+                <span className="text-primary-foreground/80 text-sm">023 456 789</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <i className="fas fa-envelope text-accent"></i>
-                <span className="text-primary-foreground/80">thoitrangstore@gmail.com</span>
+              <div className="flex items-center space-x-2">
+                <i className="fas fa-envelope text-accent text-sm"></i>
+                <span className="text-primary-foreground/80 text-sm">thoitrangstore@gmail.com</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <i className="fas fa-clock text-accent"></i>
-                <span className="text-primary-foreground/80">8:00 - 22:00 (Thứ 2 - CN)</span>
+              <div className="flex items-center space-x-2">
+                <i className="fas fa-clock text-accent text-sm"></i>
+                <span className="text-primary-foreground/80 text-sm">8:00 - 22:00 (Thứ 2 - CN)</span>
+              </div>
+              <div className="mt-3 space-y-1">
+                <a 
+                  href="https://zalo.me/0234567890" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  data-testid="link-zalo"
+                >
+                  <i className="fas fa-comment text-blue-400 text-sm"></i>
+                  <span className="text-sm">Zalo: 023 456 789</span>
+                </a>
+                <a 
+                  href="https://m.me/thoitrangstore" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  data-testid="link-messenger"
+                >
+                  <i className="fab fa-facebook-messenger text-blue-500 text-sm"></i>
+                  <span className="text-sm">Facebook Messenger</span>
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/20 mt-12 pt-8 text-center">
-          <p className="text-primary-foreground/80">
+        <div className="border-t border-primary-foreground/20 mt-6 pt-4 text-center">
+          <p className="text-primary-foreground/80 text-sm">
             © 2025 ThoitrangStore. Tất cả quyền được bảo lưu.
           </p>
         </div>
