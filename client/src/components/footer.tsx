@@ -6,7 +6,7 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <i className="fas fa-tshirt text-2xl"></i>
-              <span className="text-2xl font-bold">FashionStore</span>
+              <span className="text-2xl font-bold">ThoitrangStore</span>
             </div>
             <p className="text-primary-foreground/80">
               Thời trang hiện đại với chất lượng cao và giá cả hợp lý. Tạo nên phong cách riêng của bạn.
@@ -60,7 +60,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <i className="fas fa-envelope text-accent"></i>
-                <span className="text-primary-foreground/80">info@fashionstore.com</span>
+                <span className="text-primary-foreground/80">thoitrangstore@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <i className="fas fa-clock text-accent"></i>
@@ -72,7 +72,7 @@ export default function Footer() {
 
         <div className="border-t border-primary-foreground/20 mt-12 pt-8 text-center">
           <p className="text-primary-foreground/80">
-            © 2024 FashionStore. Tất cả quyền được bảo lưu.
+            © 2025 ThoitrangStore. Tất cả quyền được bảo lưu.
           </p>
         </div>
       </div>

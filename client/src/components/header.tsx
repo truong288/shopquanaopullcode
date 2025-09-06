@@ -20,7 +20,11 @@ interface HeaderProps {
   onCartClick?: () => void;
 }
 
-export default function Header({ searchQuery = "", onSearchChange, onCartClick }: HeaderProps) {
+export default function Header({
+  searchQuery = "",
+  onSearchChange,
+  onCartClick,
+}: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
@@ -29,7 +33,8 @@ export default function Header({ searchQuery = "", onSearchChange, onCartClick }
     enabled: isAuthenticated,
   });
 
-  const cartItemCount = cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  const cartItemCount =
+    cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -37,21 +42,37 @@ export default function Header({ searchQuery = "", onSearchChange, onCartClick }
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-4">
-            <a href="/" className="text-2xl font-bold text-primary" data-testid="link-logo">
-              <i className="fas fa-tshirt mr-2"></i>FashionStore
+            <a
+              href="/"
+              className="text-2xl font-bold text-primary"
+              data-testid="link-logo"
+            >
+              <i className="fas fa-tshirt mr-2"></i>Thời trang Store
             </a>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-foreground hover:text-primary transition-colors" data-testid="link-home">
+            <a
+              href="/"
+              className="text-foreground hover:text-primary transition-colors"
+              data-testid="link-home"
+            >
               Trang Chủ
             </a>
-            <a href="/products" className="text-muted-foreground hover:text-primary transition-colors" data-testid="link-products">
+            <a
+              href="/products"
+              className="text-muted-foreground hover:text-primary transition-colors"
+              data-testid="link-products"
+            >
               Sản Phẩm
             </a>
-            {user?.role === 'admin' && (
-              <a href="/admin" className="text-muted-foreground hover:text-primary transition-colors" data-testid="link-admin">
+            {user?.role === "admin" && (
+              <a
+                href="/admin"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                data-testid="link-admin"
+              >
                 Quản Trị
               </a>
             )}
@@ -85,7 +106,7 @@ export default function Header({ searchQuery = "", onSearchChange, onCartClick }
               >
                 <i className="fas fa-shopping-cart text-xl"></i>
                 {cartItemCount > 0 && (
-                  <Badge 
+                  <Badge
                     className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs h-5 w-5 flex items-center justify-center p-0"
                     data-testid="badge-cart-count"
                   >
@@ -100,11 +121,18 @@ export default function Header({ searchQuery = "", onSearchChange, onCartClick }
               {isAuthenticated ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2" data-testid="button-user-menu">
-                      <img 
-                        src={user?.profileImageUrl || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=32&h=32"} 
+                    <Button
+                      variant="ghost"
+                      className="flex items-center space-x-2"
+                      data-testid="button-user-menu"
+                    >
+                      <img
+                        src={
+                          user?.profileImageUrl ||
+                          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=32&h=32"
+                        }
                         alt="User avatar"
-                        className="w-8 h-8 rounded-full object-cover" 
+                        className="w-8 h-8 rounded-full object-cover"
                       />
                       <span className="hidden md:block">{user?.firstName}</span>
                       <i className="fas fa-chevron-down text-xs"></i>
@@ -123,7 +151,7 @@ export default function Header({ searchQuery = "", onSearchChange, onCartClick }
                         Đơn Hàng Của Tôi
                       </a>
                     </DropdownMenuItem>
-                    {user?.role === 'admin' && (
+                    {user?.role === "admin" && (
                       <DropdownMenuItem asChild>
                         <a href="/admin" data-testid="menu-admin">
                           <i className="fas fa-cog mr-2"></i>
@@ -166,14 +194,23 @@ export default function Header({ searchQuery = "", onSearchChange, onCartClick }
         {isMenuOpen && (
           <div className="md:hidden border-t border-border py-4">
             <nav className="space-y-2">
-              <a href="/" className="block py-2 text-foreground hover:text-primary transition-colors">
+              <a
+                href="/"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+              >
                 Trang Chủ
               </a>
-              <a href="/products" className="block py-2 text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="/products"
+                className="block py-2 text-muted-foreground hover:text-primary transition-colors"
+              >
                 Sản Phẩm
               </a>
-              {user?.role === 'admin' && (
-                <a href="/admin" className="block py-2 text-muted-foreground hover:text-primary transition-colors">
+              {user?.role === "admin" && (
+                <a
+                  href="/admin"
+                  className="block py-2 text-muted-foreground hover:text-primary transition-colors"
+                >
                   Quản Trị
                 </a>
               )}
