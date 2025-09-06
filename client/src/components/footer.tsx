@@ -92,8 +92,27 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/20 mt-6 pt-4 text-center">
-          <p className="text-primary-foreground/80 text-sm">
+        <div className="border-t border-primary-foreground/20 mt-6 pt-4">
+          {/* Social Media Icons Row */}
+          <div className="flex justify-center space-x-6 mb-4">
+            <a href="https://facebook.com/thoitrangstore" target="_blank" rel="noopener noreferrer" className="bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition-colors" data-testid="footer-facebook">
+              <i className="fab fa-facebook-f text-white text-xl"></i>
+            </a>
+            <a href="https://zalo.me/0234567890" target="_blank" rel="noopener noreferrer" className="bg-blue-500 p-3 rounded-full hover:bg-blue-600 transition-colors" data-testid="footer-zalo">
+              <i className="fas fa-comment text-white text-xl"></i>
+            </a>
+            <a href="https://www.tiktok.com/@thoitrangstore" target="_blank" rel="noopener noreferrer" className="bg-black p-3 rounded-full hover:bg-gray-800 transition-colors" data-testid="footer-tiktok">
+              <i className="fab fa-tiktok text-white text-xl"></i>
+            </a>
+            <a href="https://www.instagram.com/thoitrangstore" target="_blank" rel="noopener noreferrer" className="bg-gradient-to-br from-purple-600 to-pink-500 p-3 rounded-full hover:from-purple-700 hover:to-pink-600 transition-colors" data-testid="footer-instagram">
+              <i className="fab fa-instagram text-white text-xl"></i>
+            </a>
+            <a href="https://youtube.com/@thoitrangstore" target="_blank" rel="noopener noreferrer" className="bg-red-600 p-3 rounded-full hover:bg-red-700 transition-colors" data-testid="footer-youtube">
+              <i className="fab fa-youtube text-white text-xl"></i>
+            </a>
+          </div>
+          
+          <p className="text-primary-foreground/80 text-sm text-center">
             © 2025 ThoitrangStore. Tất cả quyền được bảo lưu.
           </p>
         </div>
