@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { StarRating } from "./star-rating";
+import { ReviewsList } from "./reviews-list";
+import { ReviewForm } from "./review-form";
 import type { Product } from "@shared/schema";
 
 interface ProductModalProps {
@@ -20,9 +25,22 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState("details");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
+
+  // Fetch reviews
+  const { data: reviews, isLoading: reviewsLoading } = useQuery({
+    queryKey: [`/api/products/${product.id}/reviews`],
+    enabled: isOpen && activeTab === "reviews",
+  });
+
+  // Check if user can review
+  const { data: canReviewData } = useQuery({
+    queryKey: [`/api/products/${product.id}/can-review`],
+    enabled: isOpen && isAuthenticated && activeTab === "reviews",
+  });
 
   const addToCartMutation = useMutation({
     mutationFn: async ({ productId, quantity, size, color }: {
@@ -280,26 +298,90 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               </Button>
             </div>
 
-            {/* Product Features */}
+            {/* Tabs for Details and Reviews */}
             <div className="border-t border-border pt-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center space-x-2">
-                  <i className="fas fa-truck text-primary"></i>
-                  <span>Giao hàng miễn phí</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <i className="fas fa-undo text-primary"></i>
-                  <span>Đổi trả trong 7 ngày</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <i className="fas fa-shield-alt text-primary"></i>
-                  <span>Bảo hành chính hãng</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <i className="fas fa-headset text-primary"></i>
-                  <span>Hỗ trợ 24/7</span>
-                </div>
-              </div>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="details">Chi Tiết</TabsTrigger>
+                  <TabsTrigger value="reviews" className="flex items-center gap-2">
+                    Đánh Giá
+                    <Badge variant="secondary" className="text-xs">
+                      {product.reviewCount || 0}
+                    </Badge>
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="details" className="space-y-4 mt-4">
+                  {/* Product Features */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <i className="fas fa-truck text-primary"></i>
+                      <span>Giao hàng miễn phí</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <i className="fas fa-undo text-primary"></i>
+                      <span>Đổi trả trong 7 ngày</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <i className="fas fa-shield-alt text-primary"></i>
+                      <span>Bảo hành chính hãng</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <i className="fas fa-headset text-primary"></i>
+                      <span>Hỗ trợ 24/7</span>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Overall Rating */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <h3 className="font-semibold">Đánh giá sản phẩm</h3>
+                      <div className="flex items-center gap-3">
+                        <StarRating 
+                          rating={parseFloat(product.rating || "0")} 
+                          size="md" 
+                          showValue={true}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          ({product.reviewCount || 0} đánh giá)
+                        </span>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveTab("reviews")}
+                      data-testid="button-view-reviews"
+                    >
+                      Xem đánh giá
+                    </Button>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="reviews" className="space-y-4 mt-4 max-h-96 overflow-y-auto">
+                  {/* Review Form - only show if user can review */}
+                  {isAuthenticated && canReviewData?.canReview && (
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Viết đánh giá của bạn</h3>
+                      <ReviewForm 
+                        productId={product.id} 
+                        onSuccess={() => setActiveTab("reviews")}
+                      />
+                      <Separator />
+                    </div>
+                  )}
+                  
+                  {/* Reviews List */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Đánh giá từ khách hàng</h3>
+                    <ReviewsList 
+                      reviews={reviews || []} 
+                      isLoading={reviewsLoading} 
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>
