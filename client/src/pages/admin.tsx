@@ -181,7 +181,11 @@ export default function Admin() {
       };
       
       console.log("Sending product data:", product);
-      return await apiRequest("POST", "/api/products", product);
+      if (editingProduct) {
+        return await apiRequest("PUT", `/api/products/${editingProduct.id}`, product);
+      } else {
+        return await apiRequest("POST", "/api/products", product);
+      }
     },
     onSuccess: () => {
       toast({
@@ -720,7 +724,10 @@ export default function Admin() {
                             disabled={createProductMutation.isPending}
                             className="bg-accent hover:bg-accent/90 text-accent-foreground"
                           >
-                            {createProductMutation.isPending ? "Đang tạo..." : "Tạo Sản Phẩm"}
+                            {createProductMutation.isPending 
+                              ? (editingProduct ? "Đang cập nhật..." : "Đang tạo...") 
+                              : (editingProduct ? "Cập Nhật Sản Phẩm" : "Tạo Sản Phẩm")
+                            }
                           </Button>
                         </div>
                       </form>
@@ -766,26 +773,41 @@ export default function Admin() {
                             <td className="py-3 px-4">
                               <div className="flex space-x-2">
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
-                                  className="p-2 text-primary hover:bg-primary/10"
+                                  className="text-primary hover:bg-primary/10"
                                   onClick={() => {
                                     setEditingProduct(product);
+                                    setProductImages(product.imageUrls || []);
+                                    productForm.reset({
+                                      name: product.name,
+                                      slug: product.slug || "",
+                                      description: product.description || "",
+                                      price: product.price,
+                                      originalPrice: product.originalPrice || "",
+                                      categoryId: product.categoryId || "",
+                                      imageUrls: product.imageUrls?.join(',') || "",
+                                      sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : product.sizes || "",
+                                      colors: Array.isArray(product.colors) ? product.colors.join(', ') : product.colors || "",
+                                      stock: product.stock || 0,
+                                      isActive: product.isActive ?? true,
+                                      isFeatured: product.isFeatured ?? false,
+                                    });
                                     setIsProductModalOpen(true);
                                   }}
                                   data-testid={`button-edit-product-${product.id}`}
                                 >
-                                  <i className="fas fa-edit"></i>
+                                  Sửa
                                 </Button>
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
-                                  className="p-2 text-destructive hover:bg-destructive/10"
+                                  className="text-destructive hover:bg-destructive/10"
                                   onClick={() => deleteProductMutation.mutate(product.id)}
                                   disabled={deleteProductMutation.isPending}
                                   data-testid={`button-delete-product-${product.id}`}
                                 >
-                                  <i className="fas fa-trash"></i>
+                                  Xóa
                                 </Button>
                               </div>
                             </td>
