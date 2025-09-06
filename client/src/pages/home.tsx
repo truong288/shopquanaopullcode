@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ProductCard from "@/components/product-card";
@@ -92,11 +93,11 @@ export default function Home() {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {categories?.slice(0, 4).map((category) => (
-              <Card 
-                key={category.id} 
-                className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300"
-                data-testid={`card-category-${category.slug}`}
-              >
+              <Link key={category.id} href={`/products?category=${category.id}`}>
+                <Card 
+                  className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300"
+                  data-testid={`card-category-${category.slug}`}
+                >
                 <div className="relative">
                   <img 
                     src={category.imageUrl || "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300"} 
@@ -109,7 +110,8 @@ export default function Home() {
                     <p className="text-sm opacity-90">{category.description}</p>
                   </div>
                 </div>
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
