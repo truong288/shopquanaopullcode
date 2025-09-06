@@ -21,6 +21,10 @@ export default function Home() {
     queryKey: ["/api/products/featured"],
   });
 
+  const { data: allProducts } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
+
   const { data: searchResults } = useQuery<Product[]>({
     queryKey: ["/api/products", { search: searchQuery }],
     enabled: searchQuery.length > 2,
@@ -141,6 +145,38 @@ export default function Home() {
                 key={product.id} 
                 product={product}
                 data-testid={`card-product-${product.id}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Products */}
+      <section className="py-16 bg-secondary/10">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Sản Phẩm Mới Nhất</h2>
+              <p className="text-muted-foreground">Khám phá những sản phẩm vừa được thêm vào</p>
+            </div>
+            <Link href="/products">
+              <Button 
+                variant="link" 
+                className="text-primary hover:text-primary/80 font-semibold"
+                data-testid="button-view-all-latest-products"
+              >
+                Xem Tất Cả
+                →
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {allProducts?.slice(0, 8).map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product}
+                data-testid={`card-latest-product-${product.id}`}
               />
             ))}
           </div>
