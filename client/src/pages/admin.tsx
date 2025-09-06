@@ -971,7 +971,22 @@ export default function Admin() {
               <div>
                 <h3 className="font-semibold mb-2">Địa Chỉ Giao Hàng</h3>
                 <p className="text-sm">
-                  {selectedOrder.shippingAddress}, {selectedOrder.shippingWard}, {selectedOrder.shippingDistrict}, {selectedOrder.shippingProvince}
+                  {selectedOrder.shippingAddress}, {
+                    selectedOrder.shippingWard === 'ward1' ? 'Phường 1' :
+                    selectedOrder.shippingWard === 'ward2' ? 'Phường 2' :
+                    selectedOrder.shippingWard === 'ward3' ? 'Phường 3' :
+                    selectedOrder.shippingWard
+                  }, {
+                    selectedOrder.shippingDistrict === 'district1' ? 'Quận 1' :
+                    selectedOrder.shippingDistrict === 'district2' ? 'Quận 2' :
+                    selectedOrder.shippingDistrict === 'district3' ? 'Quận 3' :
+                    selectedOrder.shippingDistrict
+                  }, {
+                    selectedOrder.shippingProvince === 'hcm' ? 'TP. Hồ Chí Minh' :
+                    selectedOrder.shippingProvince === 'hanoi' ? 'Hà Nội' :
+                    selectedOrder.shippingProvince === 'danang' ? 'Đà Nẵng' :
+                    selectedOrder.shippingProvince
+                  }
                 </p>
                 {selectedOrder.notes && (
                   <p className="text-sm mt-1"><span className="font-medium">Ghi chú:</span> {selectedOrder.notes}</p>
