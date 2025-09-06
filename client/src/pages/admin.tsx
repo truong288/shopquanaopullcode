@@ -985,7 +985,13 @@ export default function Admin() {
                   {selectedOrder.items?.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg">
                       <img 
-                        src={item.product.imageUrls?.split(',')[0] || "https://images.unsplash.com/photo-1441986300917-64674bd600d8"} 
+                        src={
+                          typeof item.product.imageUrls === 'string' 
+                            ? item.product.imageUrls.split(',')[0] 
+                            : Array.isArray(item.product.imageUrls) 
+                              ? item.product.imageUrls[0] 
+                              : "https://images.unsplash.com/photo-1441986300917-64674bd600d8"
+                        } 
                         alt={item.product.name}
                         className="w-16 h-16 object-cover rounded"
                       />
