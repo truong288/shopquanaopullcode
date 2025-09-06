@@ -14,16 +14,16 @@ export default function Footer() {
               Thời trang hiện đại với chất lượng cao và giá cả hợp lý. Tạo nên phong cách riêng của bạn.
             </p>
             <div className="flex space-x-3">
-              <a href="https://facebook.com/thoitrangstore" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-facebook">
+              <a href="https://zalo.me/thoitrangstore" target="_blank" rel="noopener noreferrer" className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition-colors w-10 h-10 flex items-center justify-center" data-testid="link-zalo">
+                <i className="fas fa-comment text-lg"></i>
+              </a>
+              <a href="https://facebook.com/thoitrangstore" target="_blank" rel="noopener noreferrer" className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded transition-colors w-10 h-10 flex items-center justify-center" data-testid="link-facebook">
                 <i className="fab fa-facebook-f text-lg"></i>
               </a>
-              <a href="https://www.instagram.com/thoitrangstore" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-instagram">
-                <i className="fab fa-instagram text-lg"></i>
-              </a>
-              <a href="https://www.tiktok.com/@thoitrangstore" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-tiktok">
+              <a href="https://www.tiktok.com/@thoitrangstore" target="_blank" rel="noopener noreferrer" className="bg-black hover:bg-gray-800 text-white p-2 rounded transition-colors w-10 h-10 flex items-center justify-center" data-testid="link-tiktok">
                 <i className="fab fa-tiktok text-lg"></i>
               </a>
-              <a href="https://youtube.com/@thoitrangstore" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" data-testid="link-youtube">
+              <a href="https://youtube.com/@thoitrangstore" target="_blank" rel="noopener noreferrer" className="bg-red-600 hover:bg-red-700 text-white p-2 rounded transition-colors w-10 h-10 flex items-center justify-center" data-testid="link-youtube">
                 <i className="fab fa-youtube text-lg"></i>
               </a>
             </div>
