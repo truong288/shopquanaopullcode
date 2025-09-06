@@ -5,6 +5,7 @@ import {
   orders,
   orderItems,
   cartItems,
+  reviews,
   type User,
   type UpsertUser,
   type Category,
@@ -17,6 +18,8 @@ import {
   type InsertOrderItem,
   type CartItem,
   type InsertCartItem,
+  type Review,
+  type InsertReview,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, asc } from "drizzle-orm";
@@ -55,6 +58,12 @@ export interface IStorage {
   getOrder(id: string): Promise<(Order & { items: (OrderItem & { product: Product })[] }) | undefined>;
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
   updateOrderStatus(id: string, status: string): Promise<Order>;
+  
+  // Review operations
+  getProductReviews(productId: string): Promise<(Review & { user: Pick<User, 'id' | 'firstName' | 'lastName'> })[]>;
+  createReview(review: InsertReview): Promise<Review>;
+  updateProductRating(productId: string): Promise<void>;
+  canUserReview(userId: string, productId: string): Promise<boolean>;
   
   // Admin operations
   getOrdersAdmin(): Promise<(Order & { items: (OrderItem & { product: Product })[] })[]>;
@@ -295,6 +304,93 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, id))
       .returning();
     return updated;
+  }
+
+  // Review operations
+  async getProductReviews(productId: string): Promise<(Review & { user: Pick<User, 'id' | 'firstName' | 'lastName'> })[]> {
+    return await db
+      .select({
+        id: reviews.id,
+        productId: reviews.productId,
+        userId: reviews.userId,
+        orderId: reviews.orderId,
+        rating: reviews.rating,
+        comment: reviews.comment,
+        isVerified: reviews.isVerified,
+        createdAt: reviews.createdAt,
+        updatedAt: reviews.updatedAt,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        }
+      })
+      .from(reviews)
+      .leftJoin(users, eq(reviews.userId, users.id))
+      .where(eq(reviews.productId, productId))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  async createReview(review: InsertReview): Promise<Review> {
+    const [newReview] = await db
+      .insert(reviews)
+      .values(review)
+      .returning();
+
+    // Update product rating after creating review
+    await this.updateProductRating(review.productId);
+
+    return newReview;
+  }
+
+  async updateProductRating(productId: string): Promise<void> {
+    const [stats] = await db
+      .select({
+        averageRating: sql<number>`AVG(CAST(${reviews.rating} AS NUMERIC))`,
+        reviewCount: sql<number>`COUNT(*)`,
+      })
+      .from(reviews)
+      .where(eq(reviews.productId, productId));
+
+    await db
+      .update(products)
+      .set({
+        rating: stats?.averageRating ? stats.averageRating.toFixed(1) : "0",
+        reviewCount: stats?.reviewCount || 0,
+      })
+      .where(eq(products.id, productId));
+  }
+
+  async canUserReview(userId: string, productId: string): Promise<boolean> {
+    // Check if user has purchased this product
+    const [purchase] = await db
+      .select({ orderId: orderItems.orderId })
+      .from(orderItems)
+      .leftJoin(orders, eq(orderItems.orderId, orders.id))
+      .where(
+        and(
+          eq(orderItems.productId, productId),
+          eq(orders.userId, userId),
+          eq(orders.status, 'delivered')
+        )
+      )
+      .limit(1);
+
+    if (!purchase) return false;
+
+    // Check if user already reviewed this product
+    const [existingReview] = await db
+      .select()
+      .from(reviews)
+      .where(
+        and(
+          eq(reviews.productId, productId),
+          eq(reviews.userId, userId)
+        )
+      )
+      .limit(1);
+
+    return !existingReview;
   }
 
   // Admin operations

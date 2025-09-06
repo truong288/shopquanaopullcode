@@ -7,7 +7,8 @@ import {
   insertCategorySchema, 
   insertCartItemSchema,
   insertOrderSchema,
-  insertOrderItemSchema 
+  insertOrderItemSchema,
+  insertReviewSchema 
 } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -238,6 +239,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting product:", error);
       res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
+  // Review routes
+  app.get('/api/products/:productId/reviews', async (req, res) => {
+    try {
+      const reviews = await storage.getProductReviews(req.params.productId);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  app.post('/api/products/:productId/reviews', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const productId = req.params.productId;
+
+      // Check if user can review this product
+      const canReview = await storage.canUserReview(userId, productId);
+      if (!canReview) {
+        return res.status(403).json({ 
+          message: "Bạn chỉ có thể đánh giá sản phẩm đã mua và chưa đánh giá trước đó" 
+        });
+      }
+
+      const reviewData = insertReviewSchema.parse({ 
+        ...req.body, 
+        userId, 
+        productId,
+        isVerified: true // Mark as verified since we checked purchase
+      });
+      
+      const review = await storage.createReview(reviewData);
+      res.json(review);
+    } catch (error) {
+      console.error("Error creating review:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid review data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create review" });
+    }
+  });
+
+  app.get('/api/products/:productId/can-review', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const canReview = await storage.canUserReview(userId, req.params.productId);
+      res.json({ canReview });
+    } catch (error) {
+      console.error("Error checking review permission:", error);
+      res.status(500).json({ message: "Failed to check review permission" });
     }
   });
 
