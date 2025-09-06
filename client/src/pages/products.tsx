@@ -18,7 +18,25 @@ export default function Products() {
   });
 
   const { data: products } = useQuery<Product[]>({
-    queryKey: ["/api/products", { categoryId: selectedCategory === "all" ? "" : selectedCategory, search: searchQuery }],
+    queryKey: ["/api/products", selectedCategory === "all" ? "" : selectedCategory, searchQuery],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedCategory !== "all" && selectedCategory) {
+        params.append('categoryId', selectedCategory);
+      }
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      
+      const url = `/api/products${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url, { credentials: "include" });
+      
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
   });
 
   const filteredProducts = products?.filter(product => {
