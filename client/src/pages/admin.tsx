@@ -107,7 +107,8 @@ export default function Admin() {
 
   const handleViewOrderDetail = async (orderId: string) => {
     try {
-      const orderDetail = await apiRequest(`/api/orders/${orderId}`);
+      const response = await apiRequest("GET", `/api/orders/${orderId}`);
+      const orderDetail = await response.json();
       setSelectedOrder(orderDetail);
       setShowOrderDetail(true);
     } catch (error) {
