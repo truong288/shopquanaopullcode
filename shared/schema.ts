@@ -121,10 +121,24 @@ export const cartItems = pgTable("cart_items", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Product reviews
+export const reviews = pgTable("reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  productId: varchar("product_id").references(() => products.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  orderId: varchar("order_id").references(() => orders.id), // Only verified purchasers
+  rating: integer("rating").notNull(), // 1-5 stars
+  comment: text("comment"),
+  isVerified: boolean("is_verified").default(false), // Verified purchase
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
   cartItems: many(cartItems),
+  reviews: many(reviews),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -138,6 +152,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   }),
   orderItems: many(orderItems),
   cartItems: many(cartItems),
+  reviews: many(reviews),
 }));
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({
@@ -167,6 +182,21 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
   product: one(products, {
     fields: [cartItems.productId],
     references: [products.id],
+  }),
+}));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  product: one(products, {
+    fields: [reviews.productId],
+    references: [products.id],
+  }),
+  user: one(users, {
+    fields: [reviews.userId],
+    references: [users.id],
+  }),
+  order: one(orders, {
+    fields: [reviews.orderId],
+    references: [orders.id],
   }),
 }));
 
@@ -205,6 +235,12 @@ export const insertCartItemSchema = createInsertSchema(cartItems).omit({
   updatedAt: true,
 });
 
+export const insertReviewSchema = createInsertSchema(reviews).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -218,3 +254,5 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 export type CartItem = typeof cartItems.$inferSelect;
 export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
