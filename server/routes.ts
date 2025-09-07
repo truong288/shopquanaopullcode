@@ -274,8 +274,8 @@ export function registerRoutes(app: Express) {
           originalPrice: originalPrice || null,
           categoryId,
           stock: parseInt(stock),
-          sizes: sizes ? JSON.parse(sizes) : [],
-          colors: colors ? JSON.parse(colors) : [],
+          sizes: sizes ? (typeof sizes === 'string' ? sizes.split(',').map(s => s.trim()) : sizes) : [],
+          colors: colors ? (typeof colors === 'string' ? colors.split(',').map(c => c.trim()) : colors) : [],
           imageUrls,
           isFeatured: isFeatured === 'true',
           rating: "0",
@@ -301,8 +301,8 @@ export function registerRoutes(app: Express) {
         originalPrice: originalPrice || null,
         categoryId,
         stock: parseInt(stock),
-        sizes: sizes ? JSON.parse(sizes) : [],
-        colors: colors ? JSON.parse(colors) : [],
+        sizes: sizes ? (typeof sizes === 'string' ? sizes.split(',').map(s => s.trim()) : sizes) : [],
+        colors: colors ? (typeof colors === 'string' ? colors.split(',').map(c => c.trim()) : colors) : [],
         isFeatured: isFeatured === 'true'
       };
 
@@ -914,6 +914,21 @@ export function registerRoutes(app: Express) {
   });
 
 
+
+  // Image upload endpoint
+  app.post("/api/upload/image", requireAuth, upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const imageUrl = `/api/uploads/${req.file.filename}`;
+      res.json({ url: imageUrl });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
 
   // Serve uploaded files
   app.use("/attached_assets", express.static(path.join(process.cwd(), "attached_assets")));
