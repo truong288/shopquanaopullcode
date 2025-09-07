@@ -174,25 +174,25 @@ export default function ShoppingCart({ isOpen, onClose }: ShoppingCartProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-8 h-8 p-0 border-red-300 hover:bg-red-50 hover:border-red-400 transition-colors"
+                            className="w-8 h-8 p-0 border-2 border-red-400 hover:bg-red-50 hover:border-red-500 transition-colors flex items-center justify-center"
                             onClick={() => handleQuantityChange(item, item.quantity - 1)}
                             disabled={updateCartMutation.isPending}
                             data-testid={`button-decrease-${item.id}`}
                           >
-                            <i className="fas fa-minus text-sm text-red-600"></i>
+                            <span className="text-red-600 font-bold text-lg leading-none">−</span>
                           </Button>
-                          <span className="text-base font-semibold w-10 text-center bg-gray-50 rounded px-2 py-1" data-testid={`text-quantity-${item.id}`}>
+                          <span className="text-base font-semibold w-12 text-center bg-gray-100 rounded px-3 py-2 border" data-testid={`text-quantity-${item.id}`}>
                             {item.quantity}
                           </span>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-8 h-8 p-0 border-green-300 hover:bg-green-50 hover:border-green-400 transition-colors"
+                            className="w-8 h-8 p-0 border-2 border-green-400 hover:bg-green-50 hover:border-green-500 transition-colors flex items-center justify-center"
                             onClick={() => handleQuantityChange(item, item.quantity + 1)}
                             disabled={updateCartMutation.isPending}
                             data-testid={`button-increase-${item.id}`}
                           >
-                            <i className="fas fa-plus text-sm text-green-600"></i>
+                            <span className="text-green-600 font-bold text-lg leading-none">+</span>
                           </Button>
                         </div>
                         <span className="font-semibold text-primary" data-testid={`text-item-price-${item.id}`}>
@@ -204,13 +204,13 @@ export default function ShoppingCart({ isOpen, onClose }: ShoppingCartProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="p-2 border-red-300 hover:bg-red-50 hover:border-red-400 text-red-600 hover:text-red-700 transition-colors"
+                        className="w-8 h-8 p-0 border-2 border-red-400 hover:bg-red-50 hover:border-red-500 text-red-600 hover:text-red-700 transition-colors flex items-center justify-center"
                         onClick={() => removeFromCartMutation.mutate(item.id)}
                         disabled={removeFromCartMutation.isPending}
                         data-testid={`button-remove-${item.id}`}
                         title="Xóa sản phẩm"
                       >
-                        <i className="fas fa-trash text-sm"></i>
+                        <span className="text-red-600 font-bold text-lg leading-none">×</span>
                       </Button>
                     </div>
                   </div>
