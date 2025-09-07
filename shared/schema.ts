@@ -107,7 +107,7 @@ export const reviews = pgTable("reviews", {
 
 export const sessions = pgTable("sessions", {
   sid: varchar().primaryKey().notNull(),
-  sess: text().notNull(), // Changed from jsonb to text to match actual schema
+  sess: text().notNull(),
   expire: timestamp({ mode: 'string' }).notNull(),
 });
 
