@@ -112,14 +112,17 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     ? Math.round(((parseFloat(product.originalPrice!) - parseFloat(product.price)) / parseFloat(product.originalPrice!)) * 100)
     : 0;
 
-  // Use actual product images or fallback to default
-  const images = product.imageUrls && product.imageUrls.length > 0 
-    ? product.imageUrls
+  const images = product.imageUrls && product.imageUrls.length > 0 && product.imageUrls[0] && product.imageUrls[0].trim() !== ""
+    ? product.imageUrls 
     : ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500"];
 
-  // Default sizes and colors if not specified
-  const sizes = product.sizes && product.sizes.length > 0 ? product.sizes : ["S", "M", "L", "XL"];
-  const colors = product.colors && product.colors.length > 0 ? product.colors : ["Đỏ", "Xanh", "Đen", "Trắng"];
+  const productSizes = product.sizes && Array.isArray(product.sizes) ? product.sizes : 
+    typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()) : 
+    ["S", "M", "L", "XL"];
+
+  const productColors = product.colors && Array.isArray(product.colors) ? product.colors : 
+    typeof product.colors === 'string' ? product.colors.split(',').map(c => c.trim()) : 
+    ["Đỏ", "Xanh", "Đen", "Trắng"];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -230,7 +233,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             <div className="space-y-3">
               <h3 className="font-semibold">Kích Thước:</h3>
               <div className="flex space-x-2">
-                {sizes.map((size) => (
+                {productSizes.map((size) => (
                   <Button
                     key={size}
                     variant={selectedSize === size ? "default" : "outline"}
@@ -252,7 +255,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             <div className="space-y-3">
               <h3 className="font-semibold">Màu Sắc:</h3>
               <div className="flex space-x-2">
-                {colors.map((color) => (
+                {productColors.map((color) => (
                   <Button
                     key={color}
                     variant={selectedColor === color ? "default" : "outline"}

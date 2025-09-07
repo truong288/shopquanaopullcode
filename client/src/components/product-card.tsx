@@ -23,6 +23,9 @@ export default function ProductCard({ product, "data-testid": testId }: ProductC
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
 
+  // Debug logging
+  console.log("Product images for", product.name, ":", product.imageUrls);
+
   const addToCartMutation = useMutation({
     mutationFn: async ({ productId, quantity, size, color }: {
       productId: string;
@@ -100,9 +103,17 @@ export default function ProductCard({ product, "data-testid": testId }: ProductC
       >
         <div className="relative overflow-hidden">
           <img 
-            src={product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500"} 
+            src={
+              product.imageUrls && product.imageUrls.length > 0 && product.imageUrls[0] && product.imageUrls[0].trim() !== ""
+                ? product.imageUrls[0] 
+                : "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500"
+            } 
             alt={product.name}
             className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              console.log("Image load error for product:", product.name, "URL:", product.imageUrls?.[0]);
+              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500";
+            }}
           />
           
           {/* Badges */}

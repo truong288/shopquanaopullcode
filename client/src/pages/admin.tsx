@@ -882,9 +882,17 @@ export default function Admin() {
                           <tr key={product.id} className="border-b border-border" data-testid={`row-product-${product.id}`}>
                             <td className="py-3 px-4">
                               <img
-                                src={product.imageUrls?.[0] || "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=60&h=60"}
+                                src={
+                                  product.imageUrls && product.imageUrls.length > 0 && product.imageUrls[0] && product.imageUrls[0].trim() !== ""
+                                    ? product.imageUrls[0] 
+                                    : "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=60&h=60"
+                                }
                                 alt={product.name}
                                 className="w-12 h-12 object-cover rounded-lg"
+                                onError={(e) => {
+                                  console.log("Admin image load error for:", product.name, "URL:", product.imageUrls?.[0]);
+                                  (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=60&h=60";
+                                }}
                               />
                             </td>
                             <td className="py-3 px-4 font-semibold">{product.name}</td>
