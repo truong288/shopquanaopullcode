@@ -51,14 +51,45 @@ export function registerRoutes(app: Express) {
     if (!req.user || !req.isAuthenticated()) {
       return res.status(401).json({ message: "Unauthorized" });
     }
+    
+    // Ensure session user is set from authenticated user
+    if (!req.session.user) {
+      req.session.user = {
+        id: req.user.claims.sub,
+        role: 'user' // default role, will be updated from database if needed
+      };
+    }
+    
     next();
   };
 
-  const requireAdmin = (req: any, res: any, next: any) => {
-    if (!req.session?.user || req.session.user.role !== "admin") {
-      return res.status(403).json({ message: "Admin access required" });
+  const requireAdmin = async (req: any, res: any, next: any) => {
+    if (!req.user || !req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
-    next();
+
+    try {
+      // Get user from database to check role
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user.claims.sub));
+      
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Update session with user info
+      req.session.user = {
+        id: user.id,
+        role: user.role
+      };
+
+      next();
+    } catch (error) {
+      console.error("Error checking admin role:", error);
+      res.status(500).json({ message: "Failed to verify admin access" });
+    }
   };
 
   // Categories
