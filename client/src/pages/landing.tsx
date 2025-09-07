@@ -91,20 +91,20 @@ export default function Landing() {
 
             {/* Right Image Section */}
             <div className="relative h-[400px] lg:h-[500px] flex justify-center items-center">
-              {/* Main Fashion Image - Square format */}
-              <div className="relative bg-gray-100 rounded-3xl overflow-hidden shadow-xl w-[400px] h-[400px] lg:w-[450px] lg:h-[450px]">
+              {/* Main Fashion Image - Square format exactly as drawn */}
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden shadow-xl w-[350px] h-[350px] lg:w-[400px] lg:h-[400px]">
                 <img 
                   src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800" 
                   alt="Fashion Collection - Women's Clothing"
                   className="w-full h-full object-cover"
                 />
                 
-                {/* Product Stats Card - Positioned at bottom left of image */}
-                <div className="absolute bottom-4 left-4 bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+                {/* Product Stats Card - Positioned at bottom left corner of image */}
+                <div className="absolute bottom-3 left-3 bg-white p-3 rounded-lg shadow-lg border border-gray-100">
                   <div className="flex items-center space-x-2">
-                    <span className="text-3xl font-bold text-orange-500">50+</span>
+                    <span className="text-2xl font-bold text-orange-500">50+</span>
                     <div>
-                      <div className="text-sm font-semibold text-gray-800">Sản phẩm mới</div>
+                      <div className="text-xs font-medium text-gray-800">Sản phẩm mới</div>
                     </div>
                   </div>
                 </div>
