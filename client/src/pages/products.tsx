@@ -64,6 +64,8 @@ export default function Products() {
         searchQuery={searchQuery} 
         onSearchChange={setSearchQuery}
         onCartClick={() => setIsCartOpen(true)}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
       />
       
       <div className="container mx-auto px-4 lg:px-8 py-16">

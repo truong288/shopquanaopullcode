@@ -45,7 +45,12 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <Header 
+        searchQuery={searchQuery} 
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+      />
       
       {/* Hero Section */}
       <section id="home" className="relative">
@@ -130,35 +135,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Category Filter Section */}
-      <section className="py-8 bg-background border-b">
-        <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex flex-wrap items-center gap-4">
-            <h3 className="text-lg font-semibold">Lọc theo danh mục:</h3>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={selectedCategory === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory("all")}
-                className="rounded-full"
-              >
-                Tất cả danh mục
-              </Button>
-              {categories?.map((category) => (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                  className="rounded-full"
-                >
-                  {category.name}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Sale Products */}
       <section className="py-16 bg-gradient-to-r from-red-50 to-pink-50">

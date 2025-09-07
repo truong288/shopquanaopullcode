@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import type { CartItem, Product } from "@shared/schema";
+import type { CartItem, Product, Category } from "@shared/schema";
 
 type CartItemWithProduct = CartItem & { product: Product };
 
@@ -18,12 +18,16 @@ interface HeaderProps {
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   onCartClick?: () => void;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
 }
 
 export default function Header({
   searchQuery = "",
   onSearchChange,
   onCartClick,
+  selectedCategory = "all",
+  onCategoryChange,
 }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
@@ -31,6 +35,10 @@ export default function Header({
   const { data: cartItems } = useQuery<CartItemWithProduct[]>({
     queryKey: ["/api/cart"],
     enabled: isAuthenticated,
+  });
+
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
   });
 
   const cartItemCount =
@@ -226,6 +234,39 @@ export default function Header({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Category Filter Section - Always visible */}
+      {onCategoryChange && (
+        <div className="border-t border-border bg-secondary/30">
+          <div className="container mx-auto px-4 lg:px-8 py-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium text-muted-foreground">Lọc theo danh mục:</span>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={selectedCategory === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onCategoryChange("all")}
+                  className="rounded-full text-xs h-8"
+                >
+                  Tất cả danh mục
+                </Button>
+                {categories?.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant={selectedCategory === category.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onCategoryChange(category.id)}
+                    className="rounded-full text-xs h-8"
+                  >
+                    {category.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </header>
   );
