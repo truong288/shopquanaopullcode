@@ -21,15 +21,15 @@ import ImageUpload from "@/components/image-upload";
 import { TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-type OrderWithItems = Order & { 
-  items: Array<{ 
-    id: string; 
-    quantity: number; 
-    price: string; 
-    size?: string; 
-    color?: string; 
-    product: Product; 
-  }> 
+type OrderWithItems = Order & {
+  items: Array<{
+    id: string;
+    quantity: number;
+    price: string;
+    size?: string;
+    color?: string;
+    product: Product;
+  }>
 };
 
 const productFormSchema = insertProductSchema.extend({
@@ -231,14 +231,18 @@ export default function Admin() {
     },
     onSuccess: () => {
       toast({
-        title: "Tạo thành công",
-        description: "Sản phẩm đã được tạo.",
+        title: "Thành công!",
+        description: "Sản phẩm đã được tạo thành công.",
       });
+
+      // Invalidate queries to refresh product list and featured products
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       queryClient.invalidateQueries({ queryKey: ["/api/products/featured"] });
-      setIsProductModalOpen(false);
-      productForm.reset();
+
+      // Reset form
       setProductImages([]);
+      productForm.reset();
+      setIsProductModalOpen(false);
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -412,8 +416,8 @@ export default function Admin() {
           <button
             onClick={() => setActiveTab("dashboard")}
             className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
-              activeTab === "dashboard" 
-                ? "text-foreground bg-primary/10 border-r-2 border-primary" 
+              activeTab === "dashboard"
+                ? "text-foreground bg-primary/10 border-r-2 border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             }`}
             data-testid="nav-dashboard"
@@ -424,8 +428,8 @@ export default function Admin() {
           <button
             onClick={() => setActiveTab("products")}
             className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
-              activeTab === "products" 
-                ? "text-foreground bg-primary/10 border-r-2 border-primary" 
+              activeTab === "products"
+                ? "text-foreground bg-primary/10 border-r-2 border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             }`}
             data-testid="nav-products"
@@ -436,8 +440,8 @@ export default function Admin() {
           <button
             onClick={() => setActiveTab("orders")}
             className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
-              activeTab === "orders" 
-                ? "text-foreground bg-primary/10 border-r-2 border-primary" 
+              activeTab === "orders"
+                ? "text-foreground bg-primary/10 border-r-2 border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             }`}
             data-testid="nav-orders"
@@ -448,8 +452,8 @@ export default function Admin() {
           <button
             onClick={() => setActiveTab("customers")}
             className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
-              activeTab === "customers" 
-                ? "text-foreground bg-primary/10 border-r-2 border-primary" 
+              activeTab === "customers"
+                ? "text-foreground bg-primary/10 border-r-2 border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             }`}
             data-testid="nav-customers"
@@ -460,8 +464,8 @@ export default function Admin() {
           <button
             onClick={() => setActiveTab("settings")}
             className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
-              activeTab === "settings" 
-                ? "text-foreground bg-primary/10 border-r-2 border-primary" 
+              activeTab === "settings"
+                ? "text-foreground bg-primary/10 border-r-2 border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             }`}
             data-testid="nav-settings"
@@ -596,7 +600,7 @@ export default function Admin() {
                 <h1 className="text-3xl font-bold">Quản Lý Sản Phẩm</h1>
                 <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
                   <DialogTrigger asChild>
-                    <Button 
+                    <Button
                       className="bg-accent hover:bg-accent/90 text-accent-foreground"
                       data-testid="button-add-product"
                     >
@@ -650,10 +654,10 @@ export default function Admin() {
                             <FormItem>
                               <FormLabel>Mô Tả</FormLabel>
                               <FormControl>
-                                <Textarea 
+                                <Textarea
                                   placeholder="Mô tả chi tiết về sản phẩm"
                                   rows={3}
-                                  {...field} 
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -669,10 +673,10 @@ export default function Admin() {
                               <FormItem>
                                 <FormLabel>Giá Bán *</FormLabel>
                                 <FormControl>
-                                  <Input 
+                                  <Input
                                     type="number"
                                     placeholder="100000"
-                                    {...field} 
+                                    {...field}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -687,10 +691,10 @@ export default function Admin() {
                               <FormItem>
                                 <FormLabel>Giá Gốc</FormLabel>
                                 <FormControl>
-                                  <Input 
+                                  <Input
                                     type="number"
                                     placeholder="150000"
-                                    {...field} 
+                                    {...field}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -732,7 +736,7 @@ export default function Admin() {
                               <FormItem>
                                 <FormLabel>Số Lượng</FormLabel>
                                 <FormControl>
-                                  <Input 
+                                  <Input
                                     type="number"
                                     placeholder="100"
                                     {...field}
@@ -747,7 +751,7 @@ export default function Admin() {
 
                         <div>
                           <Label>Hình Ảnh Sản Phẩm</Label>
-                          <ImageUpload 
+                          <ImageUpload
                             images={productImages}
                             onImagesChange={setProductImages}
                             maxImages={5}
@@ -762,9 +766,9 @@ export default function Admin() {
                               <FormItem>
                                 <FormLabel>Kích Thước</FormLabel>
                                 <FormControl>
-                                  <Input 
+                                  <Input
                                     placeholder="S, M, L, XL"
-                                    {...field} 
+                                    {...field}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -779,9 +783,9 @@ export default function Admin() {
                               <FormItem>
                                 <FormLabel>Màu Sắc</FormLabel>
                                 <FormControl>
-                                  <Input 
+                                  <Input
                                     placeholder="Đỏ, Xanh, Đen, Trắng"
-                                    {...field} 
+                                    {...field}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -845,8 +849,8 @@ export default function Admin() {
                             disabled={createProductMutation.isPending}
                             className="bg-accent hover:bg-accent/90 text-accent-foreground"
                           >
-                            {createProductMutation.isPending 
-                              ? (editingProduct ? "Đang cập nhật..." : "Đang tạo...") 
+                            {createProductMutation.isPending
+                              ? (editingProduct ? "Đang cập nhật..." : "Đang tạo...")
                               : (editingProduct ? "Cập Nhật Sản Phẩm" : "Tạo Sản Phẩm")
                             }
                           </Button>
@@ -875,10 +879,10 @@ export default function Admin() {
                         {products?.map((product) => (
                           <tr key={product.id} className="border-b border-border" data-testid={`row-product-${product.id}`}>
                             <td className="py-3 px-4">
-                              <img 
-                                src={product.imageUrls?.[0] || "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=60&h=60"} 
+                              <img
+                                src={product.imageUrls?.[0] || "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=60&h=60"}
                                 alt={product.name}
-                                className="w-12 h-12 object-cover rounded-lg" 
+                                className="w-12 h-12 object-cover rounded-lg"
                               />
                             </td>
                             <td className="py-3 px-4 font-semibold">{product.name}</td>
@@ -975,8 +979,8 @@ export default function Admin() {
                               {parseFloat(order.total).toLocaleString()}₫
                             </td>
                             <td className="py-3 px-4">
-                              <Select 
-                                value={order.status} 
+                              <Select
+                                value={order.status}
                                 onValueChange={(status) => updateOrderStatusMutation.mutate({ orderId: order.id, status })}
                               >
                                 <SelectTrigger className="w-32">
@@ -1182,7 +1186,7 @@ export default function Admin() {
                   <h3 className="font-semibold mb-2">Thông Tin Đơn Hàng</h3>
                   <div className="space-y-1 text-sm">
                     <p><span className="font-medium">Ngày đặt:</span> {new Date(selectedOrder.createdAt!).toLocaleDateString('vi-VN')}</p>
-                    <p><span className="font-medium">Trạng thái:</span> 
+                    <p><span className="font-medium">Trạng thái:</span>
                       <Badge className="ml-2">
                         {selectedOrder.status === 'pending' && 'Chờ xác nhận'}
                         {selectedOrder.status === 'confirmed' && 'Đã xác nhận'}
@@ -1229,14 +1233,14 @@ export default function Admin() {
                 <div className="space-y-3">
                   {selectedOrder.items?.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg">
-                      <img 
+                      <img
                         src={
-                          typeof item.product.imageUrls === 'string' 
-                            ? item.product.imageUrls.split(',')[0] 
-                            : Array.isArray(item.product.imageUrls) 
-                              ? item.product.imageUrls[0] 
+                          typeof item.product.imageUrls === 'string'
+                            ? item.product.imageUrls.split(',')[0]
+                            : Array.isArray(item.product.imageUrls)
+                              ? item.product.imageUrls[0]
                               : "https://images.unsplash.com/photo-1441986300917-64674bd600d8"
-                        } 
+                        }
                         alt={item.product.name}
                         className="w-16 h-16 object-cover rounded"
                       />

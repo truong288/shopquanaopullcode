@@ -104,6 +104,7 @@ export default function ProductCard({ product, "data-testid": testId }: ProductC
             alt={product.name}
             className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
+              console.log("Image failed to load:", product.imageUrls?.[0]);
               const img = e.target as HTMLImageElement;
               img.src = "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500";
             }}

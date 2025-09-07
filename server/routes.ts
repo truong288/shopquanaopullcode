@@ -231,7 +231,7 @@ export function registerRoutes(app: Express) {
   app.get("/api/products/:id/reviews", async (req, res) => {
     try {
       const productId = req.params.id;
-      
+
       const productReviews = await db
         .select({
           id: reviews.id,
@@ -265,12 +265,16 @@ export function registerRoutes(app: Express) {
         `/api/uploads/${file.filename}`
       ) || [];
 
-      // Generate slug from name
+      // Generate slug from name with Vietnamese character support
       const slug = name.toLowerCase()
-        .replace(/[^\w\s-]/g, '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
-        .replace(/--+/g, '-')
-        .trim();
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
 
       const [product] = await db
         .insert(products)
@@ -302,12 +306,16 @@ export function registerRoutes(app: Express) {
     try {
       const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
 
-      // Generate slug from name
+      // Generate slug from name with Vietnamese character support
       const slug = name.toLowerCase()
-        .replace(/[^\w\s-]/g, '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
-        .replace(/--+/g, '-')
-        .trim();
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
 
       const updateData: any = {
         name,
