@@ -219,7 +219,7 @@ export function registerRoutes(app: Express) {
   // Get all products with optional filtering
   app.get("/api/products", async (req, res) => {
     try {
-      const { category, search, sortBy = "createdAt", sortOrder = "desc" } = req.query;
+      const { categoryId, category, search, sortBy = "createdAt", sortOrder = "desc" } = req.query;
 
       let query = db.select({
         product: products,
@@ -232,16 +232,25 @@ export function registerRoutes(app: Express) {
       // Apply search filter
       if (search && typeof search === 'string') {
         query = query.where(
-          or(
-            ilike(products.name, `%${search}%`),
-            ilike(products.description, `%${search}%`)
+          and(
+            eq(products.isActive, true),
+            or(
+              ilike(products.name, `%${search}%`),
+              ilike(products.description, `%${search}%`)
+            )
           )
         );
       }
 
-      // Apply category filter
-      if (category && typeof category === 'string') {
-        query = query.where(eq(products.categoryId, category));
+      // Apply category filter - support both categoryId and category params
+      const categoryParam = categoryId || category;
+      if (categoryParam && typeof categoryParam === 'string') {
+        query = query.where(
+          and(
+            eq(products.isActive, true),
+            eq(products.categoryId, categoryParam)
+          )
+        );
       }
 
       // Apply sorting
