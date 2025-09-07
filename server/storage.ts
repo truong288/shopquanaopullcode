@@ -381,10 +381,12 @@ export class DatabaseStorage implements IStorage {
       .from(reviews)
       .where(eq(reviews.productId, productId));
 
+    const avgRating = stats?.averageRating ? Number(stats.averageRating) : 0;
+
     await db
       .update(products)
       .set({
-        rating: stats?.averageRating ? stats.averageRating.toFixed(1) : "0",
+        rating: avgRating > 0 ? avgRating.toFixed(1) : "0",
         reviewCount: stats?.reviewCount || 0,
       })
       .where(eq(products.id, productId));
