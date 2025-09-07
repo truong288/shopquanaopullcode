@@ -48,7 +48,7 @@ export function registerRoutes(app: Express) {
 
   // Auth middleware
   const requireAuth = (req: any, res: any, next: any) => {
-    if (!req.session?.user) {
+    if (!req.user || !req.isAuthenticated()) {
       return res.status(401).json({ message: "Unauthorized" });
     }
     next();
@@ -562,7 +562,7 @@ export function registerRoutes(app: Express) {
 
   // Auth routes
   app.get("/api/auth/user", async (req, res) => {
-    if (!req.session?.user) {
+    if (!req.user || !req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
     
@@ -571,7 +571,7 @@ export function registerRoutes(app: Express) {
       const [user] = await db
         .select()
         .from(users)
-        .where(eq(users.id, req.session.user.claims.sub));
+        .where(eq(users.id, (req.user as any).claims.sub));
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
