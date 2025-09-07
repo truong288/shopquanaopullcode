@@ -39,47 +39,67 @@ export default function Home() {
       />
       
       {/* Hero Section */}
-      <section id="home" className="relative">
-        <div className="bg-gradient-to-br from-primary/5 to-accent/5 py-20 lg:py-32">
-          <div className="container mx-auto px-4 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="relative bg-gradient-to-br from-gray-50 to-white py-20 lg:py-32">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-8">
               <div className="space-y-6">
                 <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                  Thời Trang <span className="text-accent">Hiện Đại</span><br/>
-                  Phong Cách <span className="text-primary">Độc Đáo</span>
+                  Thời Trang <span className="text-orange-500">Hiện Đại</span><br/>
+                  Phong Cách <span className="text-gray-800">Độc Đáo</span>
                 </h1>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-gray-600 leading-relaxed">
                   Khám phá bộ sưu tập thời trang mới nhất với chất lượng cao, thiết kế tinh tế và giá cả hợp lý. Tạo nên phong cách riêng của bạn.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    size="lg" 
-                    className="bg-accent hover:bg-accent/90 text-accent-foreground"
-                    data-testid="button-shop-now"
-                    onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
-                  >
-                    Mua Ngay
-                    <i className="fas fa-arrow-right ml-2"></i>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    data-testid="button-view-collection"
-                    onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
-                  >
-                    Xem Bộ Sưu Tập
-                  </Button>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  size="lg" 
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 font-semibold"
+                  data-testid="button-shop-now"
+                  onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Mua Ngay
+                </Button>
+                <Button 
+                  variant="outline"
+                  size="lg" 
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 font-semibold"
+                  data-testid="button-view-collection"
+                  onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Xem Bộ Sưu Tập
+                </Button>
+              </div>
+
+              {/* Product Stats */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100 inline-block">
+                <div className="flex items-center space-x-2">
+                  <span className="text-3xl font-bold text-orange-500" data-testid="text-featured-count">50+</span>
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">Sản phẩm mới</div>
+                  </div>
                 </div>
               </div>
-              <div className="relative">
+            </div>
+
+            {/* Right Image */}
+            <div className="relative">
+              <div className="relative bg-gray-100 rounded-3xl overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" 
-                  alt="Fashion model in trendy outfit" 
-                  className="rounded-2xl shadow-2xl w-full h-auto" 
+                  src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=1000" 
+                  alt="Fashion Collection"
+                  className="w-full h-[600px] object-cover"
                 />
-                <div className="absolute -bottom-6 -left-6 bg-background border border-border rounded-xl p-4 shadow-lg">
-                  <div className="text-2xl font-bold text-accent" data-testid="text-featured-count">50+</div>
-                  <div className="text-sm text-muted-foreground">Sản phẩm mới</div>
+              </div>
+              
+              {/* Floating elements */}
+              <div className="absolute -top-4 -right-4 bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-gray-700">Có sẵn</span>
                 </div>
               </div>
             </div>
