@@ -227,28 +227,58 @@ export default function Landing() {
 
           {/* Show filtered products or search results */}
           {searchQuery.length > 2 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {searchResults?.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product}
-                  data-testid={`card-search-product-${product.id}`}
-                />
-              ))}
+            <div>
+              {(!searchResults || searchResults.length === 0) ? (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">🔍</div>
+                  <h3 className="text-2xl font-semibold mb-2">Không tìm thấy sản phẩm</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Không có sản phẩm nào khớp với từ khóa "{searchQuery}".
+                  </p>
+                  <Button 
+                    onClick={() => setSearchQuery("")}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Xem tất cả sản phẩm
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {searchResults.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product}
+                      data-testid={`card-search-product-${product.id}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : selectedCategory === "all" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {featuredProducts?.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product}
-                  data-testid={`card-featured-product-${product.id}`}
-                />
-              ))}
+            <div>
+              {(!featuredProducts || featuredProducts.length === 0) ? (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">🛍️</div>
+                  <h3 className="text-2xl font-semibold mb-2">Chưa có sản phẩm nổi bật</h3>
+                  <p className="text-muted-foreground">
+                    Hiện tại chưa có sản phẩm nổi bật nào được hiển thị.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {featuredProducts.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product}
+                      data-testid={`card-featured-product-${product.id}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div>
-              {allProducts?.length === 0 ? (
+              {(!allProducts || allProducts.length === 0) ? (
                 <div className="text-center py-16">
                   <div className="text-6xl mb-4">📦</div>
                   <h3 className="text-2xl font-semibold mb-2">Không có sản phẩm</h3>
@@ -264,7 +294,7 @@ export default function Landing() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {allProducts?.map((product) => (
+                  {allProducts.map((product) => (
                     <ProductCard 
                       key={product.id} 
                       product={product}
@@ -276,16 +306,7 @@ export default function Landing() {
             </div>
           )}
 
-          {/* Empty state for search */}
-          {searchQuery.length > 2 && (!searchResults || searchResults.length === 0) && (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-2xl font-semibold mb-2">Không tìm thấy sản phẩm</h3>
-              <p className="text-muted-foreground">
-                Không có sản phẩm nào khớp với từ khóa "{searchQuery}".
-              </p>
-            </div>
-          )}
+          
         </div>
       </section>
 
