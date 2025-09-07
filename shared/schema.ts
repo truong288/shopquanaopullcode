@@ -107,7 +107,7 @@ export const reviews = pgTable("reviews", {
 
 export const sessions = pgTable("sessions", {
   sid: varchar().primaryKey().notNull(),
-  sess: text().notNull(),
+  sess: text().notNull(), // Keep as text to match migration expectations
   expire: timestamp({ mode: 'string' }).notNull(),
 });
 
