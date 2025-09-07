@@ -18,6 +18,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { insertProductSchema, type Product, type Order, type User, type Category } from "@shared/schema";
 import { z } from "zod";
 import ImageUpload from "@/components/image-upload";
+import { TabsContent } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type OrderWithItems = Order & { 
   items: Array<{ 
@@ -95,15 +97,21 @@ export default function Admin() {
     enabled: isAuthenticated && user?.role === 'admin',
   });
 
+  const { data: orders } = useQuery<OrderWithItems[]>({
+    queryKey: ["/api/orders"],
+    enabled: isAuthenticated && user?.role === 'admin',
+  });
+
   const { data: products } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     enabled: isAuthenticated && user?.role === 'admin',
   });
 
-  const { data: orders } = useQuery<OrderWithItems[]>({
-    queryKey: ["/api/orders"],
+  const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
+    queryKey: ["/api/admin/users"],
     enabled: isAuthenticated && user?.role === 'admin',
   });
+
 
   const handleViewOrderDetail = async (orderId: string) => {
     try {
@@ -119,11 +127,6 @@ export default function Admin() {
       });
     }
   };
-
-  const { data: users } = useQuery<User[]>({
-    queryKey: ["/api/admin/users"],
-    enabled: isAuthenticated && user?.role === 'admin',
-  });
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
@@ -206,7 +209,7 @@ export default function Admin() {
       if (!productData.price || productData.price.trim() === "") {
         throw new Error("Giá bán là bắt buộc");
       }
-      
+
       // Convert form data to product format with proper validation
       const product = {
         ...productData,
@@ -218,7 +221,7 @@ export default function Admin() {
         stock: productData.stock || 0,
         categoryId: productData.categoryId && productData.categoryId.trim() !== "" ? productData.categoryId : undefined,
       };
-      
+
       console.log("Sending product data:", product);
       if (editingProduct) {
         return await apiRequest("PUT", `/api/products/${editingProduct.id}`, product);
@@ -393,6 +396,11 @@ export default function Admin() {
     }
   };
 
+  // Helper function to update user role
+  const updateUserRole = (userId: string, role: string) => {
+    updateUserRoleMutation.mutate({ userId, role });
+  };
+
   return (
     <div className="flex h-screen bg-secondary/20">
       {/* Admin Sidebar */}
@@ -471,7 +479,7 @@ export default function Admin() {
           {activeTab === "dashboard" && (
             <div>
               <h1 className="text-3xl font-bold mb-8">Dashboard Tổng Quan</h1>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <Card>
                   <CardContent className="p-6">
@@ -602,7 +610,7 @@ export default function Admin() {
                         {editingProduct ? "Chỉnh Sửa Sản Phẩm" : "Thêm Sản Phẩm Mới"}
                       </DialogTitle>
                     </DialogHeader>
-                    
+
                     <Form {...productForm}>
                       <form onSubmit={productForm.handleSubmit(onSubmitProduct)} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -619,7 +627,7 @@ export default function Admin() {
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={productForm.control}
                             name="slug"
@@ -938,7 +946,7 @@ export default function Admin() {
           {activeTab === "orders" && (
             <div>
               <h1 className="text-3xl font-bold mb-8">Quản Lý Đơn Hàng</h1>
-              
+
               <Card>
                 <CardContent className="p-6">
                   <div className="overflow-x-auto">
@@ -1011,95 +1019,73 @@ export default function Admin() {
           {activeTab === "customers" && (
             <div>
               <h1 className="text-3xl font-bold mb-8">Quản Lý Khách Hàng</h1>
-              
+
               <Card>
-                <CardContent className="p-6">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-border">
-                          <th className="text-left py-3 px-4">Khách Hàng</th>
-                          <th className="text-left py-3 px-4">Email</th>
-                          <th className="text-left py-3 px-4">Vai Trò</th>
-                          <th className="text-left py-3 px-4">Ngày Tham Gia</th>
-                          <th className="text-left py-3 px-4">Thao Tác</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users?.map((user) => (
-                          <tr key={user.id} className="border-b border-border" data-testid={`row-user-${user.id}`}>
-                            <td className="py-3 px-4">
+                <CardHeader>
+                  <CardTitle>Danh Sách Khách Hàng</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingUsers ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">Đang tải...</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Khách Hàng</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Vai Trò</TableHead>
+                          <TableHead>Ngày Tham Gia</TableHead>
+                          <TableHead>Thao Tác</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users?.map((user: any) => (
+                          <TableRow key={user.id}>
+                            <TableCell>
                               <div className="flex items-center space-x-3">
-                                <img 
-                                  src={user.profileImageUrl || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=40&h=40"} 
-                                  alt={`${user.firstName} ${user.lastName}`}
-                                  className="w-8 h-8 rounded-full object-cover" 
+                                <img
+                                  src={user.profileImageUrl || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=32&h=32"}
+                                  alt="User avatar"
+                                  className="w-8 h-8 rounded-full object-cover"
                                 />
-                                <div>
-                                  <div className="font-medium">
-                                    {user.firstName} {user.lastName}
-                                  </div>
-                                </div>
+                                <span className="font-medium">{user.firstName} {user.lastName}</span>
                               </div>
-                            </td>
-                            <td className="py-3 px-4">{user.email}</td>
-                            <td className="py-3 px-4">
-                              <Badge className={user.role === 'admin' ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}>
+                            </TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>
+                              <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                                 {user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}
                               </Badge>
-                            </td>
-                            <td className="py-3 px-4 text-muted-foreground">
-                              {new Date(user.createdAt!).toLocaleDateString('vi-VN')}
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex space-x-2">
-                                {user.role === 'customer' ? (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-primary hover:bg-primary/10"
-                                    onClick={() => updateUserRoleMutation.mutate({ userId: user.id, role: 'admin' })}
-                                    disabled={updateUserRoleMutation.isPending}
-                                    data-testid={`button-promote-user-${user.id}`}
-                                  >
-                                    <i className="fas fa-user-shield mr-1"></i>
-                                    Làm Admin
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-orange-600 hover:bg-orange-50"
-                                    onClick={() => updateUserRoleMutation.mutate({ userId: user.id, role: 'customer' })}
-                                    disabled={updateUserRoleMutation.isPending}
-                                    data-testid={`button-demote-user-${user.id}`}
-                                  >
-                                    <i className="fas fa-user mr-1"></i>
-                                    Hủy Admin
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-destructive hover:bg-destructive/10"
-                                  onClick={() => {
-                                    if (window.confirm(`Bạn có chắc chắn muốn xóa tài khoản của ${user.firstName} ${user.lastName}?`)) {
-                                      deleteUserMutation.mutate(user.id);
-                                    }
-                                  }}
-                                  disabled={deleteUserMutation.isPending}
-                                  data-testid={`button-delete-user-${user.id}`}
-                                >
-                                  <i className="fas fa-trash mr-1"></i>
-                                  Xóa
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={user.role}
+                                onValueChange={(value) => updateUserRole(user.id, value)}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">Khách hàng</SelectItem>
+                                  <SelectItem value="admin">Quản trị viên</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      </TableBody>
+                    </Table>
+                  )}
+                  {!isLoadingUsers && (!users || users.length === 0) && (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">Không có khách hàng nào.</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -1109,7 +1095,7 @@ export default function Admin() {
           {activeTab === "settings" && (
             <div>
               <h1 className="text-3xl font-bold mb-8">Cài Đặt Hệ Thống</h1>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Phí Vận Chuyển</CardTitle>
@@ -1124,7 +1110,7 @@ export default function Admin() {
                       {shippingFeeData?.shippingFee?.toLocaleString() || '30,000'}₫
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="shipping-fee">Phí vận chuyển mới (VNĐ)</Label>
@@ -1158,7 +1144,7 @@ export default function Admin() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div className="text-sm text-muted-foreground">
                       <i className="fas fa-info-circle mr-2"></i>
                       Phí vận chuyển sẽ được áp dụng cho tất cả đơn hàng mới sau khi cập nhật.
@@ -1191,7 +1177,7 @@ export default function Admin() {
                     )}
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-semibold mb-2">Thông Tin Đơn Hàng</h3>
                   <div className="space-y-1 text-sm">
