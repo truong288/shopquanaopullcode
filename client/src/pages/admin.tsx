@@ -204,45 +204,46 @@ export default function Admin() {
   });
 
   const createProductMutation = useMutation({
-    mutationFn: async (productData: ProductFormData) => {
-      // Validate required fields first
-      if (!productData.price || productData.price.trim() === "") {
-        throw new Error("Giá bán là bắt buộc");
+    mutationFn: async (data: ProductFormData & { imageUrls?: string[] }) => {
+      const formData = new FormData();
+
+      // Add text fields
+      formData.append('name', data.name);
+      formData.append('slug', data.slug);
+      formData.append('description', data.description);
+      formData.append('price', data.price);
+      formData.append('originalPrice', data.originalPrice || '');
+      formData.append('categoryId', data.categoryId);
+      formData.append('stock', data.stock.toString());
+      formData.append('sizes', data.sizes);
+      formData.append('colors', data.colors);
+      formData.append('isFeatured', data.isFeatured.toString());
+
+      // Add image URLs if they exist
+      if (data.imageUrls && data.imageUrls.length > 0) {
+        formData.append('imageUrls', JSON.stringify(data.imageUrls));
       }
 
-      // Convert form data to product format with proper validation
-      const product = {
-        ...productData,
-        imageUrls: productImages.length > 0 ? productImages : [],
-        sizes: productData.sizes ? productData.sizes.split(',').map(size => size.trim()) : [],
-        colors: productData.colors ? productData.colors.split(',').map(color => color.trim()) : [],
-        price: productData.price.toString(),
-        originalPrice: productData.originalPrice && productData.originalPrice.trim() !== "" ? productData.originalPrice : undefined,
-        stock: productData.stock || 0,
-        categoryId: productData.categoryId && productData.categoryId.trim() !== "" ? productData.categoryId : undefined,
-      };
-
-      console.log("Sending product data:", product);
+      console.log("Sending product data:", { ...data, imageUrls: productImages }); // Log with actual productImages state
       if (editingProduct) {
-        return await apiRequest("PUT", `/api/products/${editingProduct.id}`, product);
+        // Assuming PUT request for updating, adjust endpoint if necessary
+        return await apiRequest("PUT", `/api/products/${editingProduct.id}`, { ...data, imageUrls: productImages });
       } else {
-        return await apiRequest("POST", "/api/products", product);
+        // Assuming POST request for creating
+        return await apiRequest("POST", "/api/products", { ...data, imageUrls: productImages });
       }
     },
     onSuccess: () => {
       toast({
-        title: "Thành công!",
-        description: "Sản phẩm đã được tạo thành công.",
+        title: "Thành công",
+        description: editingProduct ? "Sản phẩm đã được cập nhật." : "Sản phẩm mới đã được tạo.",
       });
-
-      // Invalidate queries to refresh product list and featured products
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/products/featured"] });
-
-      // Reset form
-      setProductImages([]);
-      productForm.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/products/featured"] }); // Invalidate featured products as well
       setIsProductModalOpen(false);
+      setEditingProduct(null);
+      setProductImages([]); // Reset images
+      productForm.reset();
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -365,7 +366,8 @@ export default function Admin() {
         .replace(/\s+/g, '-')
         .replace(/--+/g, '-');
     }
-    createProductMutation.mutate(data);
+    // Pass the current productImages state to the mutation
+    createProductMutation.mutate({ ...data, imageUrls: productImages });
   };
 
   if (isLoading) {

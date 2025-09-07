@@ -259,11 +259,24 @@ export function registerRoutes(app: Express) {
 
   app.post("/api/products", requireAdmin, upload.array('images', 5), async (req, res) => {
     try {
-      const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
+      const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured, imageUrls } = req.body;
 
-      const imageUrls = (req.files as Express.Multer.File[])?.map(file =>
-        `/api/uploads/${file.filename}`
-      ) || [];
+      // Use existing imageUrls if provided, otherwise use uploaded files
+      let finalImageUrls = [];
+      if (imageUrls) {
+        try {
+          finalImageUrls = JSON.parse(imageUrls);
+        } catch {
+          finalImageUrls = [];
+        }
+      }
+      
+      // If no existing images and files were uploaded
+      if (finalImageUrls.length === 0 && req.files && (req.files as Express.Multer.File[]).length > 0) {
+        finalImageUrls = (req.files as Express.Multer.File[]).map(file =>
+          `/api/uploads/${file.filename}`
+        );
+      }
 
       // Generate slug from name with Vietnamese character support
       const slug = name.toLowerCase()
@@ -288,7 +301,7 @@ export function registerRoutes(app: Express) {
           stock: parseInt(stock),
           sizes: sizes ? (typeof sizes === 'string' ? sizes.split(',').map(s => s.trim()) : sizes) : [],
           colors: colors ? (typeof colors === 'string' ? colors.split(',').map(c => c.trim()) : colors) : [],
-          imageUrls,
+          imageUrls: finalImageUrls,
           isFeatured: isFeatured === 'true',
           rating: "0",
           reviewCount: 0
