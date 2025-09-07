@@ -39,10 +39,7 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
 
   const createReviewMutation = useMutation({
     mutationFn: async (data: ReviewFormData) => {
-      return apiRequest(`/api/products/${productId}/reviews`, {
-        method: "POST",
-        body: data,
-      });
+      return apiRequest("POST", `/api/products/${productId}/reviews`, data);
     },
     onSuccess: () => {
       toast({
