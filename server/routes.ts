@@ -8,17 +8,13 @@ import {
   orders,
   orderItems,
   reviews,
-  shippingRates,
-  settings,
   type User,
   type Product,
   type Category,
   type CartItem,
   type Order,
   type OrderItem,
-  type Review,
-  type ShippingRate,
-  type Setting
+  type Review
 } from "@shared/schema";
 import { eq, and, sql, desc, asc, ilike, inArray, or } from "drizzle-orm";
 import multer from "multer";
@@ -747,36 +743,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // Shipping rates
-  app.get("/api/shipping-rates", async (req, res) => {
-    try {
-      const rates = await db.select().from(shippingRates);
-      res.json(rates);
-    } catch (error) {
-      console.error("Error fetching shipping rates:", error);
-      res.status(500).json({ message: "Failed to fetch shipping rates" });
-    }
-  });
-
-  app.put("/api/shipping-rates", requireAdmin, async (req, res) => {
-    try {
-      const { rates } = req.body;
-
-      // Clear existing rates
-      await db.delete(shippingRates);
-
-      // Insert new rates
-      if (rates && rates.length > 0) {
-        await db.insert(shippingRates).values(rates);
-      }
-
-      const updatedRates = await db.select().from(shippingRates);
-      res.json(updatedRates);
-    } catch (error) {
-      console.error("Error updating shipping rates:", error);
-      res.status(500).json({ message: "Failed to update shipping rates" });
-    }
-  });
+  
 
   // Serve uploaded files
   app.use("/attached_assets", express.static(path.join(process.cwd(), "attached_assets")));
