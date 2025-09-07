@@ -174,25 +174,25 @@ export default function ShoppingCart({ isOpen, onClose }: ShoppingCartProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-6 h-6 p-0"
+                            className="w-8 h-8 p-0 border-red-300 hover:bg-red-50 hover:border-red-400 transition-colors"
                             onClick={() => handleQuantityChange(item, item.quantity - 1)}
                             disabled={updateCartMutation.isPending}
                             data-testid={`button-decrease-${item.id}`}
                           >
-                            <i className="fas fa-minus text-xs"></i>
+                            <i className="fas fa-minus text-sm text-red-600"></i>
                           </Button>
-                          <span className="text-sm w-8 text-center" data-testid={`text-quantity-${item.id}`}>
+                          <span className="text-base font-semibold w-10 text-center bg-gray-50 rounded px-2 py-1" data-testid={`text-quantity-${item.id}`}>
                             {item.quantity}
                           </span>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-6 h-6 p-0"
+                            className="w-8 h-8 p-0 border-green-300 hover:bg-green-50 hover:border-green-400 transition-colors"
                             onClick={() => handleQuantityChange(item, item.quantity + 1)}
                             disabled={updateCartMutation.isPending}
                             data-testid={`button-increase-${item.id}`}
                           >
-                            <i className="fas fa-plus text-xs"></i>
+                            <i className="fas fa-plus text-sm text-green-600"></i>
                           </Button>
                         </div>
                         <span className="font-semibold text-primary" data-testid={`text-item-price-${item.id}`}>
@@ -200,16 +200,19 @@ export default function ShoppingCart({ isOpen, onClose }: ShoppingCartProps) {
                         </span>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="p-1 text-muted-foreground hover:text-destructive transition-colors"
-                      onClick={() => removeFromCartMutation.mutate(item.id)}
-                      disabled={removeFromCartMutation.isPending}
-                      data-testid={`button-remove-${item.id}`}
-                    >
-                      <i className="fas fa-trash text-sm"></i>
-                    </Button>
+                    <div className="flex flex-col space-y-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="p-2 border-red-300 hover:bg-red-50 hover:border-red-400 text-red-600 hover:text-red-700 transition-colors"
+                        onClick={() => removeFromCartMutation.mutate(item.id)}
+                        disabled={removeFromCartMutation.isPending}
+                        data-testid={`button-remove-${item.id}`}
+                        title="Xóa sản phẩm"
+                      >
+                        <i className="fas fa-trash text-sm"></i>
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
