@@ -90,14 +90,24 @@ export default function Landing() {
             </div>
 
             {/* Right Image Section */}
-            <div className="relative h-[400px] lg:h-[450px]">
-              {/* Main Fashion Image */}
-              <div className="relative bg-gray-100 rounded-3xl overflow-hidden shadow-xl">
+            <div className="relative h-[400px] lg:h-[500px] flex justify-center items-center">
+              {/* Main Fashion Image - Square format */}
+              <div className="relative bg-gray-100 rounded-3xl overflow-hidden shadow-xl w-[400px] h-[400px] lg:w-[450px] lg:h-[450px]">
                 <img 
-                  src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=1200" 
+                  src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=800" 
                   alt="Fashion Collection - Women's Clothing"
                   className="w-full h-full object-cover"
                 />
+                
+                {/* Product Stats Card - Positioned at bottom left of image */}
+                <div className="absolute bottom-4 left-4 bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-3xl font-bold text-orange-500">50+</span>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-800">Sản phẩm mới</div>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               {/* Floating Status Badge */}
@@ -105,16 +115,6 @@ export default function Landing() {
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                   <span className="text-sm font-medium text-gray-700">Có sẵn</span>
-                </div>
-              </div>
-
-              {/* Product Stats Card - Positioned as in original design */}
-              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                <div className="flex items-center space-x-3">
-                  <span className="text-4xl font-bold text-orange-500">50+</span>
-                  <div>
-                    <div className="text-sm font-semibold text-gray-800">Sản phẩm mới</div>
-                  </div>
                 </div>
               </div>
             </div>
