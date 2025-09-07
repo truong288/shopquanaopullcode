@@ -217,6 +217,47 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Latest Products Section */}
+      <section className="py-16 bg-secondary/10">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Sản Phẩm Mới Nhất</h2>
+              <p className="text-muted-foreground">Khám phá những sản phẩm vừa được thêm vào</p>
+            </div>
+            <Button 
+              variant="link" 
+              className="text-primary hover:text-primary/80 font-semibold"
+              data-testid="button-view-all-latest-products"
+              onClick={() => window.location.href = "/products"}
+            >
+              Xem Tất Cả
+            </Button>
+          </div>
+
+          {/* Display latest products (all products sorted by newest) */}
+          {allProducts && allProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {allProducts.slice(0, 8).map((product) => (
+                <ProductCard 
+                  key={product.id} 
+                  product={product}
+                  data-testid={`card-latest-product-${product.id}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="text-4xl mb-4">📦</div>
+              <h3 className="text-xl font-semibold mb-2">Chưa Có Sản Phẩm Mới</h3>
+              <p className="text-muted-foreground">
+                Sản phẩm mới nhất sẽ được hiển thị tại đây
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
       <Footer />
     </div>
   );
