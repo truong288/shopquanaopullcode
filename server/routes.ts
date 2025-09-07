@@ -467,7 +467,7 @@ export function registerRoutes(app: Express) {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const cartItems = await db
+    const userCartItems = await db
       .select({
         cartItem: cartItems,
         product: products
@@ -476,7 +476,7 @@ export function registerRoutes(app: Express) {
       .leftJoin(products, eq(cartItems.productId, products.id))
       .where(eq(cartItems.userId, userId));
 
-    if (cartItems.length === 0) {
+    if (userCartItems.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
     try {
@@ -496,7 +496,7 @@ export function registerRoutes(app: Express) {
         });
       }
 
-      const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.product!.price) * item.cartItem.quantity), 0);
+      const subtotal = userCartItems.reduce((sum, item) => sum + (parseFloat(item.product!.price) * item.cartItem.quantity), 0);
       const shippingFee = 30000; // Default shipping fee
       const total = subtotal + shippingFee;
 
@@ -521,7 +521,7 @@ export function registerRoutes(app: Express) {
 
 
       // Create order items
-      const orderItemsData = cartItems.map(item => ({
+      const orderItemsData = userCartItems.map(item => ({
         orderId: newOrder.id,
         productId: item.cartItem.productId,
         quantity: item.cartItem.quantity,
@@ -743,7 +743,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  
+
 
   // Serve uploaded files
   app.use("/attached_assets", express.static(path.join(process.cwd(), "attached_assets")));
