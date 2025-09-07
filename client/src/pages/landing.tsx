@@ -126,12 +126,12 @@ export default function Landing() {
 
           {/* Show sale products or message */}
           {featuredProducts && featuredProducts.filter(product => 
-            product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price)
+            (product as any).isOnSale || (product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price))
           ).length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {featuredProducts
                 .filter(product => 
-                  product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price)
+                  (product as any).isOnSale || (product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price))
                 )
                 .slice(0, 8)
                 .map((product) => (
