@@ -393,7 +393,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async canUserReview(userId: string, productId: string): Promise<boolean> {
-    // Check if user has purchased this product
+    // Check if user already reviewed this product
+    const [existingReview] = await db
+      .select()
+      .from(reviews)
+      .where(
+        and(
+          eq(reviews.productId, productId),
+          eq(reviews.userId, userId)
+        )
+      )
+      .limit(1);
+
+    // Allow all authenticated users to review, but only once per product
+    return !existingReview;
+  }
+
+  async hasUserPurchased(userId: string, productId: string): Promise<boolean> {
     const [purchase] = await db
       .select({ orderId: orderItems.orderId })
       .from(orderItems)
@@ -407,21 +423,7 @@ export class DatabaseStorage implements IStorage {
       )
       .limit(1);
 
-    if (!purchase) return false;
-
-    // Check if user already reviewed this product
-    const [existingReview] = await db
-      .select()
-      .from(reviews)
-      .where(
-        and(
-          eq(reviews.productId, productId),
-          eq(reviews.userId, userId)
-        )
-      )
-      .limit(1);
-
-    return !existingReview;
+    return !!purchase;
   }
 
   // Admin operations

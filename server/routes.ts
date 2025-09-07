@@ -262,15 +262,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const canReview = await storage.canUserReview(userId, productId);
       if (!canReview) {
         return res.status(403).json({ 
-          message: "Bạn chỉ có thể đánh giá sản phẩm đã mua và chưa đánh giá trước đó" 
+          message: "Bạn đã đánh giá sản phẩm này rồi" 
         });
       }
+
+      // Check if user has purchased this product for verification badge
+      const hasPurchased = await storage.hasUserPurchased(userId, productId);
 
       const reviewData = insertReviewSchema.parse({ 
         ...req.body, 
         userId, 
         productId,
-        isVerified: true // Mark as verified since we checked purchase
+        isVerified: hasPurchased // Mark as verified if user has purchased
       });
       
       const review = await storage.createReview(reviewData);
