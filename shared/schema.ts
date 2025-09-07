@@ -1,105 +1,112 @@
-import { pgTable, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+
+import { pgTable, text, integer, timestamp, boolean, varchar, numeric, pgEnum } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Define enums to match database
+export const orderStatus = pgEnum("order_status", ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']);
+export const paymentMethod = pgEnum("payment_method", ['cod', 'bank_transfer']);
+
 export const users = pgTable("users", {
-  id: text("id").primaryKey(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  email: text("email").unique().notNull(),
-  profileImageUrl: text("profile_image_url"),
-  role: text("role").default("user").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  id: varchar().default(sql`gen_random_uuid()`).primaryKey().notNull(),
+  email: varchar(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  role: varchar().default('customer'),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 });
 
 export const categories = pgTable("categories", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  description: text("description"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  id: varchar().default(sql`gen_random_uuid()`).primaryKey().notNull(),
+  name: varchar().notNull(),
+  slug: varchar().notNull(),
+  description: text(),
+  imageUrl: varchar("image_url"),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
 });
 
 export const products = pgTable("products", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  slug: text("slug").notNull(),
-  description: text("description"),
-  price: text("price").notNull(),
-  originalPrice: text("original_price"),
-  categoryId: text("category_id").references(() => categories.id),
-  imageUrls: text("image_urls").array(),
-  sizes: text("sizes").array(),
-  colors: text("colors").array(),
-  stock: integer("stock").default(0).notNull(),
-  rating: text("rating").default("0"),
-  reviewCount: integer("review_count").default(0).notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  isFeatured: boolean("is_featured").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  id: varchar().default(sql`gen_random_uuid()`).primaryKey().notNull(),
+  name: varchar().notNull(),
+  slug: varchar().notNull(),
+  description: text(),
+  price: numeric({ precision: 10, scale: 2 }).notNull(),
+  originalPrice: numeric("original_price", { precision: 10, scale: 2 }),
+  categoryId: varchar("category_id").references(() => categories.id),
+  imageUrls: text("image_urls").array().default([""]),
+  sizes: varchar().array().default([""]),
+  colors: varchar().array().default([""]),
+  stock: integer().default(0),
+  isActive: boolean("is_active").default(true),
+  isFeatured: boolean("is_featured").default(false),
+  rating: numeric({ precision: 2, scale: 1 }).default('0'),
+  reviewCount: integer("review_count").default(0),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 });
 
 export const cartItems = pgTable("cart_items", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  productId: text("product_id").references(() => products.id, { onDelete: "cascade" }).notNull(),
-  quantity: integer("quantity").default(1).notNull(),
-  size: text("size"),
-  color: text("color"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  id: varchar().default(sql`gen_random_uuid()`).primaryKey().notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  productId: varchar("product_id").references(() => products.id, { onDelete: "cascade" }).notNull(),
+  quantity: integer().notNull(),
+  size: varchar(),
+  color: varchar(),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 });
 
 export const orders = pgTable("orders", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  total: text("total").notNull(),
-  status: text("status").default("pending").notNull(),
+  id: varchar().default(sql`gen_random_uuid()`).primaryKey().notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  status: orderStatus().default('pending'),
+  paymentMethod: paymentMethod("payment_method").notNull(),
+  paymentStatus: varchar("payment_status").default('pending'),
+  subtotal: numeric({ precision: 10, scale: 2 }).notNull(),
+  shippingFee: numeric("shipping_fee", { precision: 10, scale: 2 }).default('30000'),
+  total: numeric({ precision: 10, scale: 2 }).notNull(),
+  customerName: varchar("customer_name").notNull(),
+  customerPhone: varchar("customer_phone").notNull(),
+  customerEmail: varchar("customer_email"),
   shippingAddress: text("shipping_address").notNull(),
-  customerPhone: text("customer_phone").notNull(),
-  notes: text("notes"),
-  province: text("province"),
-  district: text("district"),
-  ward: text("ward"),
-  shippingFee: text("shipping_fee").default("0"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  shippingProvince: varchar("shipping_province").notNull(),
+  shippingDistrict: varchar("shipping_district").notNull(),
+  shippingWard: varchar("shipping_ward").notNull(),
+  notes: text(),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 });
 
 export const orderItems = pgTable("order_items", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  orderId: text("order_id").references(() => orders.id, { onDelete: "cascade" }).notNull(),
-  productId: text("product_id").references(() => products.id, { onDelete: "cascade" }).notNull(),
-  quantity: integer("quantity").notNull(),
-  price: text("price").notNull(),
-  size: text("size"),
-  color: text("color"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  id: varchar().default(sql`gen_random_uuid()`).primaryKey().notNull(),
+  orderId: varchar("order_id").references(() => orders.id, { onDelete: "cascade" }).notNull(),
+  productId: varchar("product_id").references(() => products.id, { onDelete: "cascade" }).notNull(),
+  quantity: integer().notNull(),
+  price: numeric({ precision: 10, scale: 2 }).notNull(),
+  size: varchar(),
+  color: varchar(),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
 });
 
 export const reviews = pgTable("reviews", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  productId: text("product_id").references(() => products.id, { onDelete: "cascade" }).notNull(),
-  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  rating: integer("rating").notNull(),
-  comment: text("comment"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  id: varchar().default(sql`gen_random_uuid()`).primaryKey().notNull(),
+  productId: varchar("product_id").references(() => products.id, { onDelete: "cascade" }).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  orderId: varchar("order_id").references(() => orders.id),
+  rating: integer().notNull(),
+  comment: text(),
+  isVerified: boolean("is_verified").default(false),
+  createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 });
 
-export const shippingRates = pgTable("shipping_rates", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  province: text("province").notNull(),
-  district: text("district"),
-  ward: text("ward"),
-  fee: text("fee").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const settings = pgTable("settings", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  key: text("key").notNull().unique(),
-  value: text("value").notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+export const sessions = pgTable("sessions", {
+  sid: varchar().primaryKey().notNull(),
+  sess: text().notNull(), // Changed from jsonb to text to match actual schema
+  expire: timestamp({ mode: 'string' }).notNull(),
 });
 
 // Type exports
@@ -110,8 +117,6 @@ export type CartItem = typeof cartItems.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
-export type ShippingRate = typeof shippingRates.$inferSelect;
-export type Setting = typeof settings.$inferSelect;
 
 // Insert type exports
 export type InsertUser = typeof users.$inferInsert;
@@ -121,7 +126,6 @@ export type InsertCartItem = typeof cartItems.$inferInsert;
 export type InsertOrder = typeof orders.$inferInsert;
 export type InsertOrderItem = typeof orderItems.$inferInsert;
 export type InsertReview = typeof reviews.$inferInsert;
-export type InsertShippingRate = typeof shippingRates.$inferInsert;
 
 // Zod validation schemas
 export const insertUserSchema = createInsertSchema(users);
@@ -131,7 +135,6 @@ export const insertCartItemSchema = createInsertSchema(cartItems);
 export const insertOrderSchema = createInsertSchema(orders);
 export const insertOrderItemSchema = createInsertSchema(orderItems);
 export const insertReviewSchema = createInsertSchema(reviews);
-export const insertShippingRateSchema = createInsertSchema(shippingRates);
 
 export const selectUserSchema = createSelectSchema(users);
 export const selectProductSchema = createSelectSchema(products);
@@ -140,4 +143,3 @@ export const selectCartItemSchema = createSelectSchema(cartItems);
 export const selectOrderSchema = createSelectSchema(orders);
 export const selectOrderItemSchema = createSelectSchema(orderItems);
 export const selectReviewSchema = createSelectSchema(reviews);
-export const selectShippingRateSchema = createSelectSchema(shippingRates);

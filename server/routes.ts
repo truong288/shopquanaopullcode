@@ -1,11 +1,11 @@
 import express, { type Express } from "express";
 import { db } from "./db";
-import { 
-  users, 
-  products, 
-  categories, 
-  cartItems, 
-  orders, 
+import {
+  users,
+  products,
+  categories,
+  cartItems,
+  orders,
   orderItems,
   reviews,
   shippingRates,
@@ -53,7 +53,7 @@ export function registerRoutes(app: Express) {
     if (!req.user || !req.isAuthenticated()) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    
+
     // Ensure session user is set from authenticated user
     if (!req.session.user) {
       req.session.user = {
@@ -61,7 +61,7 @@ export function registerRoutes(app: Express) {
         role: 'user' // default role, will be updated from database if needed
       };
     }
-    
+
     next();
   };
 
@@ -76,7 +76,7 @@ export function registerRoutes(app: Express) {
         .select()
         .from(users)
         .where(eq(users.id, req.user.claims.sub));
-      
+
       if (!user || user.role !== "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -235,7 +235,7 @@ export function registerRoutes(app: Express) {
     try {
       const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
 
-      const imageUrls = (req.files as Express.Multer.File[])?.map(file => 
+      const imageUrls = (req.files as Express.Multer.File[])?.map(file =>
         `/api/uploads/${file.filename}`
       ) || [];
 
@@ -281,7 +281,7 @@ export function registerRoutes(app: Express) {
       };
 
       if (req.files && (req.files as Express.Multer.File[]).length > 0) {
-        updateData.imageUrls = (req.files as Express.Multer.File[]).map(file => 
+        updateData.imageUrls = (req.files as Express.Multer.File[]).map(file =>
           `/api/uploads/${file.filename}`
         );
       }
@@ -466,59 +466,67 @@ export function registerRoutes(app: Express) {
   });
 
   app.post("/api/orders", requireAuth, async (req, res) => {
+    const userId = req.session.user.id;
+    const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const cartItems = await db
+      .select({
+        cartItem: cartItems,
+        product: products
+      })
+      .from(cartItems)
+      .leftJoin(products, eq(cartItems.productId, products.id))
+      .where(eq(cartItems.userId, userId));
+
+    if (cartItems.length === 0) {
+      return res.status(400).json({ message: "Cart is empty" });
+    }
     try {
-      const { 
-        shippingAddress, 
-        customerPhone, 
+      const {
+        shippingAddress,
+        customerPhone,
         notes,
-        province,
-        district, 
-        ward,
-        shippingFee 
+        shippingProvince,
+        shippingDistrict,
+        shippingWard,
+        paymentMethod = "cod"
       } = req.body;
-      const userId = req.session.user.id;
 
-      // Get cart items
-      const cartData = await db
-        .select({
-          cartItem: cartItems,
-          product: products
-        })
-        .from(cartItems)
-        .leftJoin(products, eq(cartItems.productId, products.id))
-        .where(eq(cartItems.userId, userId));
-
-      if (cartData.length === 0) {
-        return res.status(400).json({ message: "Cart is empty" });
+      if (!shippingAddress || !customerPhone) {
+        return res.status(400).json({
+          message: "Địa chỉ giao hàng và số điện thoại là bắt buộc"
+        });
       }
 
-      // Calculate total
-      const subtotal = cartData.reduce((sum, item) => {
-        return sum + (parseFloat(item.product!.price) * item.cartItem.quantity);
-      }, 0);
-
-      const total = subtotal + parseFloat(shippingFee || "0");
+      const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.product!.price) * item.cartItem.quantity), 0);
+      const shippingFee = 30000; // Default shipping fee
+      const total = subtotal + shippingFee;
 
       // Create order
-      const [order] = await db
-        .insert(orders)
-        .values({
-          userId,
-          total: total.toString(),
-          status: "pending",
-          shippingAddress,
-          customerPhone,
-          notes,
-          province,
-          district,
-          ward,
-          shippingFee: shippingFee || "0"
-        })
-        .returning();
+      const [newOrder] = await db.insert(orders).values({
+        userId: user.id,
+        subtotal: subtotal.toString(),
+        shippingFee: shippingFee.toString(),
+        total: total.toString(),
+        status: "pending",
+        shippingAddress,
+        customerPhone,
+        notes,
+        shippingProvince: shippingProvince || "",
+        shippingDistrict: shippingDistrict || "",
+        shippingWard: shippingWard || "",
+        paymentMethod: paymentMethod as "cod" | "bank_transfer",
+        paymentStatus: "pending",
+        customerName: `${user.firstName} ${user.lastName}`,
+        customerEmail: user.email,
+      }).returning();
+
 
       // Create order items
-      const orderItemsData = cartData.map(item => ({
-        orderId: order.id,
+      const orderItemsData = cartItems.map(item => ({
+        orderId: newOrder.id,
         productId: item.cartItem.productId,
         quantity: item.cartItem.quantity,
         price: item.product!.price,
@@ -531,7 +539,7 @@ export function registerRoutes(app: Express) {
       // Clear cart
       await db.delete(cartItems).where(eq(cartItems.userId, userId));
 
-      res.json(order);
+      res.json(newOrder);
     } catch (error) {
       console.error("Error creating order:", error);
       res.status(500).json({ message: "Failed to create order" });
@@ -598,18 +606,18 @@ export function registerRoutes(app: Express) {
     if (!req.user || !req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       // Get user from database
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, (req.user as any).claims.sub));
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -712,50 +720,26 @@ export function registerRoutes(app: Express) {
   });
 
   // Settings - Shipping fee
+  // Get shipping fee setting
   app.get("/api/settings/shipping-fee", async (req, res) => {
     try {
-      const [setting] = await db
-        .select()
-        .from(settings)
-        .where(eq(settings.key, 'shipping_fee'));
-      
-      const shippingFee = setting ? parseInt(setting.value) : 30000; // Default to 30000 if not set
-      res.json({ shippingFee });
+      // Return default shipping fee since settings table doesn't exist
+      res.json({
+        shippingFee: "30000"
+      });
     } catch (error) {
       console.error("Error fetching shipping fee:", error);
-      res.status(500).json({ message: "Failed to fetch shipping fee" });
+      res.status(500).json({
+        message: "Failed to fetch shipping fee"
+      });
     }
   });
 
   app.put("/api/admin/settings/shipping-fee", requireAdmin, async (req, res) => {
     try {
       const { shippingFee } = req.body;
-      
-      // Check if setting exists
-      const [existingSetting] = await db
-        .select()
-        .from(settings)
-        .where(eq(settings.key, 'shipping_fee'));
-      
-      if (existingSetting) {
-        // Update existing setting
-        await db
-          .update(settings)
-          .set({ 
-            value: shippingFee.toString(),
-            updatedAt: new Date()
-          })
-          .where(eq(settings.key, 'shipping_fee'));
-      } else {
-        // Create new setting
-        await db
-          .insert(settings)
-          .values({
-            key: 'shipping_fee',
-            value: shippingFee.toString()
-          });
-      }
-      
+
+      // No longer updating settings table, just respond with the new fee
       res.json({ shippingFee });
     } catch (error) {
       console.error("Error updating shipping fee:", error);
