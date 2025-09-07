@@ -200,7 +200,10 @@ export default function Landing() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {allProducts?.filter(product => product.isOnSale).slice(0, 8).map((product) => (
+            {allProducts?.filter(product => 
+              product.isOnSale || 
+              (product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price))
+            ).slice(0, 8).map((product) => (
               <ProductCard 
                 key={product.id} 
                 product={product}
@@ -209,7 +212,10 @@ export default function Landing() {
             ))}
           </div>
           
-          {(!allProducts?.filter(product => product.isOnSale).length) && (
+          {(!allProducts?.filter(product => 
+            product.isOnSale || 
+            (product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price))
+          ).length) && (
             <div className="text-center py-16">
               <div className="text-4xl mb-4">🛍️</div>
               <h3 className="text-xl font-semibold mb-2">Hiện tại chưa có sản phẩm sale</h3>
@@ -219,7 +225,7 @@ export default function Landing() {
             </div>
           )}
         </div>
-      </section>
+      </section></old_str>
 
       {/* Products Section */}
       <section id="products" className="py-16">
