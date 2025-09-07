@@ -104,14 +104,89 @@ export function registerRoutes(app: Express) {
   app.post("/api/categories", requireAdmin, async (req, res) => {
     try {
       const { name, description } = req.body;
+      
+      // Generate slug from name
+      const slug = name.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
       const [category] = await db
         .insert(categories)
-        .values({ name, description })
+        .values({ name, slug, description })
         .returning();
       res.json(category);
     } catch (error) {
       console.error("Error creating category:", error);
       res.status(500).json({ message: "Failed to create category" });
+    }
+  });
+
+  app.put("/api/categories/:id", requireAdmin, async (req, res) => {
+    try {
+      const { name, description } = req.body;
+      
+      // Generate slug from name
+      const slug = name.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      const [category] = await db
+        .update(categories)
+        .set({ name, slug, description })
+        .where(eq(categories.id, req.params.id))
+        .returning();
+
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+
+      res.json(category);
+    } catch (error) {
+      console.error("Error updating category:", error);
+      res.status(500).json({ message: "Failed to update category" });
+    }
+  });
+
+  app.delete("/api/categories/:id", requireAdmin, async (req, res) => {
+    try {
+      // Check if any products are using this category
+      const productsUsingCategory = await db
+        .select()
+        .from(products)
+        .where(eq(products.categoryId, req.params.id))
+        .limit(1);
+
+      if (productsUsingCategory.length > 0) {
+        return res.status(400).json({ 
+          message: "Không thể xóa danh mục này vì đang có sản phẩm sử dụng" 
+        });
+      }
+
+      const [category] = await db
+        .delete(categories)
+        .where(eq(categories.id, req.params.id))
+        .returning();
+
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+
+      res.json({ message: "Category deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      res.status(500).json({ message: "Failed to delete category" });
     }
   });
 

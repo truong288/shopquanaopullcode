@@ -48,6 +48,13 @@ const productFormSchema = insertProductSchema.extend({
 
 type ProductFormData = z.infer<typeof productFormSchema>;
 
+const categoryFormSchema = z.object({
+  name: z.string().min(1, "Tên danh mục là bắt buộc"),
+  description: z.string().optional(),
+});
+
+type CategoryFormData = z.infer<typeof categoryFormSchema>;
+
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -55,6 +62,8 @@ export default function Admin() {
   const [productImages, setProductImages] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null);
   const [showOrderDetail, setShowOrderDetail] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -74,6 +83,14 @@ export default function Admin() {
       stock: 0,
       isActive: true,
       isFeatured: false,
+    },
+  });
+
+  const categoryForm = useForm<CategoryFormData>({
+    resolver: zodResolver(categoryFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
     },
   });
 
@@ -359,6 +376,75 @@ export default function Admin() {
     },
   });
 
+  const createCategoryMutation = useMutation({
+    mutationFn: async (data: CategoryFormData) => {
+      if (editingCategory) {
+        return await apiRequest("PUT", `/api/categories/${editingCategory.id}`, data);
+      } else {
+        return await apiRequest("POST", "/api/categories", data);
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Thành công",
+        description: editingCategory ? "Danh mục đã được cập nhật." : "Danh mục mới đã được tạo.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      setIsCategoryModalOpen(false);
+      setEditingCategory(null);
+      categoryForm.reset();
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Lỗi",
+        description: "Không thể tạo danh mục.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: string) => {
+      return await apiRequest("DELETE", `/api/categories/${categoryId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Xóa thành công",
+        description: "Danh mục đã được xóa.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Lỗi",
+        description: "Không thể xóa danh mục.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmitProduct = (data: ProductFormData) => {
     // Generate slug from name if not provided
     if (!data.slug) {
@@ -369,6 +455,10 @@ export default function Admin() {
     }
     // Pass the current productImages state to the mutation
     createProductMutation.mutate({ ...data, imageUrls: productImages });
+  };
+
+  const onSubmitCategory = (data: CategoryFormData) => {
+    createCategoryMutation.mutate(data);
   };
 
   if (isLoading) {
@@ -451,6 +541,18 @@ export default function Admin() {
           >
             <i className="fas fa-shopping-bag mr-3"></i>
             Quản Lý Đơn Hàng
+          </button>
+          <button
+            onClick={() => setActiveTab("categories")}
+            className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
+              activeTab === "categories"
+                ? "text-foreground bg-primary/10 border-r-2 border-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            }`}
+            data-testid="nav-categories"
+          >
+            <i className="fas fa-tags mr-3"></i>
+            Quản Lý Danh Mục
           </button>
           <button
             onClick={() => setActiveTab("customers")}
@@ -1025,6 +1127,156 @@ export default function Admin() {
                       </tbody>
                     </table>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Category Management */}
+          {activeTab === "categories" && (
+            <div>
+              <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold">Quản Lý Danh Mục</h1>
+                <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                      data-testid="button-add-category"
+                    >
+                      <i className="fas fa-plus mr-2"></i>
+                      Thêm Danh Mục
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingCategory ? "Chỉnh Sửa Danh Mục" : "Thêm Danh Mục Mới"}
+                      </DialogTitle>
+                    </DialogHeader>
+
+                    <Form {...categoryForm}>
+                      <form onSubmit={categoryForm.handleSubmit(onSubmitCategory)} className="space-y-4">
+                        <FormField
+                          control={categoryForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Tên Danh Mục *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Nhập tên danh mục" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={categoryForm.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Mô Tả</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Mô tả về danh mục"
+                                  rows={3}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="flex justify-end space-x-4 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              setIsCategoryModalOpen(false);
+                              categoryForm.reset();
+                              setEditingCategory(null);
+                            }}
+                          >
+                            Hủy
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={createCategoryMutation.isPending}
+                            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                          >
+                            {createCategoryMutation.isPending
+                              ? (editingCategory ? "Đang cập nhật..." : "Đang tạo...")
+                              : (editingCategory ? "Cập Nhật Danh Mục" : "Tạo Danh Mục")
+                            }
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-4">Tên Danh Mục</th>
+                          <th className="text-left py-3 px-4">Mô Tả</th>
+                          <th className="text-left py-3 px-4">Ngày Tạo</th>
+                          <th className="text-left py-3 px-4">Thao Tác</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {categories?.map((category) => (
+                          <tr key={category.id} className="border-b border-border" data-testid={`row-category-${category.id}`}>
+                            <td className="py-3 px-4 font-semibold">{category.name}</td>
+                            <td className="py-3 px-4 text-muted-foreground">{category.description || "Không có mô tả"}</td>
+                            <td className="py-3 px-4 text-muted-foreground">
+                              {new Date(category.createdAt!).toLocaleDateString('vi-VN')}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-primary hover:bg-primary/10"
+                                  onClick={() => {
+                                    setEditingCategory(category);
+                                    categoryForm.reset({
+                                      name: category.name,
+                                      description: category.description || "",
+                                    });
+                                    setIsCategoryModalOpen(true);
+                                  }}
+                                  data-testid={`button-edit-category-${category.id}`}
+                                >
+                                  Sửa
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-destructive hover:bg-destructive/10"
+                                  onClick={() => deleteCategoryMutation.mutate(category.id)}
+                                  disabled={deleteCategoryMutation.isPending}
+                                  data-testid={`button-delete-category-${category.id}`}
+                                >
+                                  Xóa
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {(!categories || categories.length === 0) && (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">Chưa có danh mục nào.</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
