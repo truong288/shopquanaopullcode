@@ -1,4 +1,3 @@
-
 import express, { type Express } from "express";
 import { db } from "./db";
 import { 
@@ -19,7 +18,7 @@ import {
   type Review,
   type ShippingRate
 } from "@shared/schema";
-import { eq, and, sql, desc, asc, ilike, inArray } from "drizzle-orm";
+import { eq, and, sql, desc, asc, ilike, inArray, or } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -88,52 +87,81 @@ export function registerRoutes(app: Express) {
   });
 
   // Products
+  // Get featured products
+  app.get("/api/products/featured", async (req, res) => {
+    try {
+      const result = await db.select({
+        product: products,
+        category: categories
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .where(and(eq(products.isActive, true), eq(products.isFeatured, true)))
+      .orderBy(desc(products.createdAt))
+      .limit(8);
+
+      const featuredProducts = result.map(row => ({
+        ...row.product,
+        category: row.category
+      }));
+
+      res.json(featuredProducts);
+    } catch (error) {
+      console.error('Error fetching featured products:', error);
+      res.status(500).json({ message: "Failed to fetch featured products" });
+    }
+  });
+
+  // Get all products with optional filtering
   app.get("/api/products", async (req, res) => {
     try {
-      const { search, category, sortBy = "name", order = "asc", page = "1", limit = "12" } = req.query;
-      
-      const pageNum = parseInt(page as string);
-      const limitNum = parseInt(limit as string);
-      const offset = (pageNum - 1) * limitNum;
+      const { category, search, sortBy = "createdAt", sortOrder = "desc" } = req.query;
 
-      let query = db.select().from(products);
-      let conditions = [];
+      let query = db.select({
+        product: products,
+        category: categories
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .where(eq(products.isActive, true));
 
-      if (search) {
-        conditions.push(ilike(products.name, `%${search}%`));
+      // Apply search filter
+      if (search && typeof search === 'string') {
+        query = query.where(
+          or(
+            ilike(products.name, `%${search}%`),
+            ilike(products.description, `%${search}%`)
+          )
+        );
       }
 
-      if (category && category !== "all") {
-        conditions.push(eq(products.categoryId, category as string));
+      // Apply category filter
+      if (category && typeof category === 'string') {
+        query = query.where(eq(products.categoryId, category));
       }
 
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+      // Apply sorting
+      const orderColumn = sortBy === 'name' ? products.name :
+                         sortBy === 'price' ? products.price :
+                         sortBy === 'rating' ? products.rating :
+                         products.createdAt;
+
+      if (sortOrder === 'asc') {
+        query = query.orderBy(asc(orderColumn));
+      } else {
+        query = query.orderBy(desc(orderColumn));
       }
 
-      const orderColumn = sortBy === "price" ? products.price : products.name;
-      const orderDirection = order === "desc" ? desc(orderColumn) : asc(orderColumn);
-      
-      const allProducts = await query
-        .orderBy(orderDirection)
-        .limit(limitNum)
-        .offset(offset);
+      const result = await query;
 
-      // Get total count for pagination
-      const totalQuery = db.select({ count: sql`count(*)` }).from(products);
-      if (conditions.length > 0) {
-        totalQuery.where(and(...conditions));
-      }
-      const [{ count }] = await totalQuery;
+      const productsWithCategories = result.map(row => ({
+        ...row.product,
+        category: row.category
+      }));
 
-      res.json({
-        products: allProducts,
-        total: Number(count),
-        page: pageNum,
-        totalPages: Math.ceil(Number(count) / limitNum)
-      });
+      res.json(productsWithCategories);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error('Error fetching products:', error);
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
@@ -173,7 +201,7 @@ export function registerRoutes(app: Express) {
   app.post("/api/products", requireAdmin, upload.array('images', 5), async (req, res) => {
     try {
       const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
-      
+
       const imageUrls = (req.files as Express.Multer.File[])?.map(file => 
         `/attached_assets/uploads/${file.filename}`
       ) || [];
@@ -206,7 +234,7 @@ export function registerRoutes(app: Express) {
   app.put("/api/products/:id", requireAdmin, upload.array('images', 5), async (req, res) => {
     try {
       const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
-      
+
       const updateData: any = {
         name,
         description,
