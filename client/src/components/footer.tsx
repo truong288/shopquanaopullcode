@@ -77,7 +77,7 @@ export default function Footer() {
                   data-testid="link-zalo"
                 >
                   <i className="fas fa-comment text-blue-400 text-sm"></i>
-                  <span className="text-sm">Zalo: 023 456 789</span>
+                  <span className="text-sm"></span>
                 </a>
                 <a 
                   href="https://m.me/thoitrangstore" 
@@ -87,7 +87,7 @@ export default function Footer() {
                   data-testid="link-messenger"
                 >
                   <i className="fab fa-facebook-messenger text-blue-500 text-sm"></i>
-                  <span className="text-sm">Facebook Messenger</span>
+                  <span className="text-sm"></span>
                 </a>
               </div>
             </div>
