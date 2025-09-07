@@ -151,6 +151,54 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Sale Section */}
+      <section className="py-16 bg-red-50">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl font-bold mb-2 text-red-600">Sale</h2>
+              <p className="text-muted-foreground">Sản phẩm đang được giảm giá đặc biệt</p>
+            </div>
+            <Button 
+              variant="outline" 
+              className="text-red-600 border-red-600 hover:bg-red-50 font-semibold"
+              onClick={() => window.location.href = "/products"}
+              data-testid="button-view-all-sale-products"
+            >
+              Xem Tất Cả
+            </Button>
+          </div>
+
+          {/* Show sale products or message */}
+          {featuredProducts && featuredProducts.filter(product => 
+            (product as any).isOnSale || (product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price))
+          ).length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {featuredProducts
+                .filter(product => 
+                  (product as any).isOnSale || (product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price))
+                )
+                .slice(0, 8)
+                .map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    data-testid={`card-sale-product-${product.id}`}
+                  />
+                ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="text-4xl mb-4">🏷️</div>
+              <h3 className="text-xl font-semibold mb-2">Chưa Có Sản Phẩm Sale</h3>
+              <p className="text-muted-foreground">
+                Hãy quay lại sau để không bỏ lỡ những ưu đãi hấp dẫn
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Latest Products */}
       <section className="py-16 bg-secondary/10">
         <div className="container mx-auto px-4 lg:px-8">
