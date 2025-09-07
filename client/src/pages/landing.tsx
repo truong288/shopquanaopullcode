@@ -137,6 +137,48 @@ export default function Landing() {
 
       
 
+      {/* New Products */}
+      <section className="py-16 bg-gradient-to-r from-green-50 to-blue-50">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl font-bold mb-2 text-green-600">
+                <i className="fas fa-sparkles mr-2"></i>Sản Phẩm Mới Nhất
+              </h2>
+              <p className="text-muted-foreground">Những sản phẩm được yêu thích nhất</p>
+            </div>
+            <Button 
+              variant="link" 
+              className="text-green-600 hover:text-green-500 font-semibold"
+              data-testid="button-view-all-new-products"
+            >
+              Xem Tất Cả
+              <i className="fas fa-arrow-right ml-2"></i>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {allProducts?.filter(product => product.isNew || product.isFeatured).slice(0, 8).map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product}
+                data-testid={`card-new-product-${product.id}`}
+              />
+            ))}
+          </div>
+          
+          {(!allProducts?.filter(product => product.isNew || product.isFeatured).length) && (
+            <div className="text-center py-16">
+              <div className="text-4xl mb-4">✨</div>
+              <h3 className="text-xl font-semibold mb-2">Hiện tại chưa có sản phẩm mới</h3>
+              <p className="text-muted-foreground">
+                Hãy quay lại sau để khám phá những sản phẩm mới nhất
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Sale Products */}
       <section className="py-16 bg-gradient-to-r from-red-50 to-pink-50">
         <div className="container mx-auto px-4 lg:px-8">
