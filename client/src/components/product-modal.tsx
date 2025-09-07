@@ -277,21 +277,23 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 <Button
                   variant="outline"
                   size="sm"
+                  className="w-10 h-10 p-0 border-2 border-red-400 hover:bg-red-50 hover:border-red-500 transition-colors flex items-center justify-center"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   data-testid="button-decrease-quantity"
                 >
-                  <i className="fas fa-minus"></i>
+                  <span className="text-red-600 font-bold text-lg leading-none">−</span>
                 </Button>
-                <span className="w-16 text-center font-semibold text-lg" data-testid="text-quantity">
+                <span className="w-16 text-center font-semibold text-lg bg-gray-100 rounded px-4 py-2 border" data-testid="text-quantity">
                   {quantity}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
+                  className="w-10 h-10 p-0 border-2 border-green-400 hover:bg-green-50 hover:border-green-500 transition-colors flex items-center justify-center"
                   onClick={() => setQuantity(Math.min(product.stock || 99, quantity + 1))}
                   data-testid="button-increase-quantity"
                 >
-                  <i className="fas fa-plus"></i>
+                  <span className="text-green-600 font-bold text-lg leading-none">+</span>
                 </Button>
               </div>
             </div>
