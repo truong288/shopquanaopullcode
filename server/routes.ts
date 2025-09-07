@@ -311,6 +311,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const cartItemData = insertCartItemSchema.parse({ ...req.body, userId });
+      
+      // Check stock availability
+      const product = await storage.getProduct(cartItemData.productId);
+      if (!product) {
+        return res.status(400).json({ message: "Sản phẩm không tồn tại" });
+      }
+      
+      // Check current cart quantity for this product
+      const existingCartItems = await storage.getCartItems(userId);
+      const existingItem = existingCartItems.find(item => 
+        item.productId === cartItemData.productId &&
+        item.size === (cartItemData.size || '') &&
+        item.color === (cartItemData.color || '')
+      );
+      
+      const currentCartQuantity = existingItem ? existingItem.quantity : 0;
+      const totalRequestedQuantity = currentCartQuantity + cartItemData.quantity;
+      
+      if (product.stock < totalRequestedQuantity) {
+        return res.status(400).json({ 
+          message: `Sản phẩm "${product.name}" chỉ còn ${product.stock} trong kho` 
+        });
+      }
+      
       const cartItem = await storage.addToCart(cartItemData);
       res.json(cartItem);
     } catch (error) {
@@ -394,6 +418,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { order: orderData, items } = createOrderSchema.parse(req.body);
+      
+      // Check stock availability for all items
+      for (const item of items) {
+        const product = await storage.getProduct(item.productId);
+        if (!product) {
+          return res.status(400).json({ message: `Sản phẩm không tồn tại` });
+        }
+        if (product.stock < item.quantity) {
+          return res.status(400).json({ 
+            message: `Sản phẩm "${product.name}" chỉ còn ${product.stock} trong kho, không đủ số lượng yêu cầu (${item.quantity})` 
+          });
+        }
+      }
       
       const order = await storage.createOrder({ ...orderData, userId }, items);
       

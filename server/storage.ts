@@ -296,10 +296,37 @@ export class DatabaseStorage implements IStorage {
     const orderItemsWithOrderId = items.map(item => ({ ...item, orderId: newOrder.id }));
     await db.insert(orderItems).values(orderItemsWithOrderId);
 
+    // Update product stock after creating order
+    for (const item of items) {
+      await db
+        .update(products)
+        .set({ 
+          stock: sql`${products.stock} - ${item.quantity}`,
+          updatedAt: new Date()
+        })
+        .where(eq(products.id, item.productId));
+    }
+
     return newOrder;
   }
 
   async updateOrderStatus(id: string, status: string): Promise<Order> {
+    // If order is being cancelled, restore stock
+    if (status === 'cancelled') {
+      const order = await this.getOrder(id);
+      if (order) {
+        for (const item of order.items) {
+          await db
+            .update(products)
+            .set({ 
+              stock: sql`${products.stock} + ${item.quantity}`,
+              updatedAt: new Date()
+            })
+            .where(eq(products.id, item.productId));
+        }
+      }
+    }
+
     const [updated] = await db
       .update(orders)
       .set({ status: status as any, updatedAt: new Date() })

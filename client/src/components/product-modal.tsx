@@ -160,7 +160,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                       const rating = parseFloat(product.rating || "0");
                       const fullStars = Math.floor(rating);
                       const hasHalfStar = rating % 1 >= 0.5;
-                      
+
                       if (i < fullStars) {
                         return <i key={i} className="fas fa-star"></i>;
                       } else if (i === fullStars && hasHalfStar) {
@@ -204,6 +204,26 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               <p className="text-muted-foreground" data-testid="text-product-description">
                 {product.description || "Sản phẩm thời trang chất lượng cao với thiết kế hiện đại, phù hợp cho mọi dịp."}
               </p>
+            </div>
+
+            {/* Stock Status */}
+            <div className="mb-4">
+              {product.stock === 0 ? (
+                <Badge variant="destructive" className="text-sm">
+                  <i className="fas fa-times-circle mr-2"></i>
+                  Hết hàng
+                </Badge>
+              ) : product.stock <= 5 ? (
+                <Badge variant="secondary" className="text-sm bg-yellow-100 text-yellow-800">
+                  <i className="fas fa-exclamation-triangle mr-2"></i>
+                  Chỉ còn {product.stock} sản phẩm
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="text-sm bg-green-100 text-green-800">
+                  <i className="fas fa-check-circle mr-2"></i>
+                  Còn {product.stock} sản phẩm
+                </Badge>
+              )}
             </div>
 
             {/* Size Selection */}
@@ -310,7 +330,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                     </Badge>
                   </TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="details" className="space-y-4 mt-4">
                   {/* Product Features */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -331,9 +351,9 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                       <span>Hỗ trợ 24/7</span>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   {/* Overall Rating */}
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
@@ -358,7 +378,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                     </Button>
                   </div>
                 </TabsContent>
-                
+
                 <TabsContent value="reviews" className="space-y-4 mt-4 max-h-96 overflow-y-auto">
                   {/* Review Form - only show if user can review */}
                   {isAuthenticated && canReviewData?.canReview && (
@@ -371,7 +391,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                       <Separator />
                     </div>
                   )}
-                  
+
                   {/* Reviews List */}
                   <div className="space-y-4">
                     <h3 className="font-semibold">Đánh giá từ khách hàng</h3>

@@ -177,13 +177,23 @@ export default function ProductCard({ product, "data-testid": testId }: ProductC
           </div>
 
           {/* Stock Status */}
-          {product.stock === 0 && (
-            <div className="mt-2">
-              <Badge variant="secondary" className="text-xs">
-                Hết hàng
-              </Badge>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {product.stock === 0 ? (
+                <Badge variant="destructive" className="text-xs">
+                  Hết hàng
+                </Badge>
+              ) : product.stock <= 5 ? (
+                <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800">
+                  Còn {product.stock} sản phẩm
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                  Còn hàng
+                </Badge>
+              )}
             </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
