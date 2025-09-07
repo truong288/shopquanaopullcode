@@ -315,9 +315,9 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.put("/api/products/:id", requireAdmin, upload.array('images', 5), async (req, res) => {
+  app.put("/api/products/:id", requireAdmin, async (req, res) => {
     try {
-      const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
+      const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured, imageUrls } = req.body;
 
       // Generate slug from name with Vietnamese character support
       const slug = name.toLowerCase()
@@ -340,13 +340,12 @@ export function registerRoutes(app: Express) {
         stock: parseInt(stock),
         sizes: sizes ? (typeof sizes === 'string' ? sizes.split(',').map(s => s.trim()) : sizes) : [],
         colors: colors ? (typeof colors === 'string' ? colors.split(',').map(c => c.trim()) : colors) : [],
-        isFeatured: isFeatured === 'true'
+        isFeatured: isFeatured === true || isFeatured === 'true'
       };
 
-      if (req.files && (req.files as Express.Multer.File[]).length > 0) {
-        updateData.imageUrls = (req.files as Express.Multer.File[]).map(file =>
-          `/api/uploads/${file.filename}`
-        );
+      // Handle image URLs - directly use the provided imageUrls array
+      if (imageUrls && Array.isArray(imageUrls)) {
+        updateData.imageUrls = imageUrls;
       }
 
       const [product] = await db

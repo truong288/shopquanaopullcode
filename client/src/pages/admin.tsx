@@ -205,32 +205,33 @@ export default function Admin() {
 
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData & { imageUrls?: string[] }) => {
-      const formData = new FormData();
-
-      // Add text fields
-      formData.append('name', data.name);
-      formData.append('slug', data.slug);
-      formData.append('description', data.description);
-      formData.append('price', data.price);
-      formData.append('originalPrice', data.originalPrice || '');
-      formData.append('categoryId', data.categoryId);
-      formData.append('stock', data.stock.toString());
-      formData.append('sizes', data.sizes);
-      formData.append('colors', data.colors);
-      formData.append('isFeatured', data.isFeatured.toString());
-
-      // Add image URLs if they exist
-      if (data.imageUrls && data.imageUrls.length > 0) {
-        formData.append('imageUrls', JSON.stringify(data.imageUrls));
-      }
-
-      console.log("Sending product data:", { ...data, imageUrls: productImages }); // Log with actual productImages state
+      console.log("Sending product data:", { ...data, imageUrls: productImages });
+      
       if (editingProduct) {
-        // Assuming PUT request for updating, adjust endpoint if necessary
-        return await apiRequest("PUT", `/api/products/${editingProduct.id}`, { ...data, imageUrls: productImages });
+        // For updates, send as JSON
+        return await apiRequest("PUT", `/api/products/${editingProduct.id}`, { 
+          ...data, 
+          imageUrls: productImages 
+        });
       } else {
-        // Assuming POST request for creating
-        return await apiRequest("POST", "/api/products", { ...data, imageUrls: productImages });
+        // For new products, still use FormData for file uploads
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('slug', data.slug);
+        formData.append('description', data.description);
+        formData.append('price', data.price);
+        formData.append('originalPrice', data.originalPrice || '');
+        formData.append('categoryId', data.categoryId);
+        formData.append('stock', data.stock.toString());
+        formData.append('sizes', data.sizes);
+        formData.append('colors', data.colors);
+        formData.append('isFeatured', data.isFeatured.toString());
+
+        if (productImages && productImages.length > 0) {
+          formData.append('imageUrls', JSON.stringify(productImages));
+        }
+
+        return await apiRequest("POST", "/api/products", formData);
       }
     },
     onSuccess: () => {
