@@ -87,12 +87,19 @@ export const reviews = pgTable("reviews", {
 });
 
 export const shippingRates = pgTable("shipping_rates", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   province: text("province").notNull(),
-  district: text("district").notNull(),
+  district: text("district"),
   ward: text("ward"),
-  rate: text("rate").notNull(),
+  fee: text("fee").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const settings = pgTable("settings", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Type exports
@@ -104,6 +111,7 @@ export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type ShippingRate = typeof shippingRates.$inferSelect;
+export type Setting = typeof settings.$inferSelect;
 
 // Insert type exports
 export type InsertUser = typeof users.$inferInsert;

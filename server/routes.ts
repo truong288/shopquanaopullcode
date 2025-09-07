@@ -9,6 +9,7 @@ import {
   orderItems,
   reviews,
   shippingRates,
+  settings,
   type User,
   type Product,
   type Category,
@@ -16,7 +17,8 @@ import {
   type Order,
   type OrderItem,
   type Review,
-  type ShippingRate
+  type ShippingRate,
+  type Setting
 } from "@shared/schema";
 import { eq, and, sql, desc, asc, ilike, inArray, or } from "drizzle-orm";
 import multer from "multer";
@@ -706,6 +708,58 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error updating order status:", error);
       res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
+  // Settings - Shipping fee
+  app.get("/api/settings/shipping-fee", async (req, res) => {
+    try {
+      const [setting] = await db
+        .select()
+        .from(settings)
+        .where(eq(settings.key, 'shipping_fee'));
+      
+      const shippingFee = setting ? parseInt(setting.value) : 30000; // Default to 30000 if not set
+      res.json({ shippingFee });
+    } catch (error) {
+      console.error("Error fetching shipping fee:", error);
+      res.status(500).json({ message: "Failed to fetch shipping fee" });
+    }
+  });
+
+  app.put("/api/admin/settings/shipping-fee", requireAdmin, async (req, res) => {
+    try {
+      const { shippingFee } = req.body;
+      
+      // Check if setting exists
+      const [existingSetting] = await db
+        .select()
+        .from(settings)
+        .where(eq(settings.key, 'shipping_fee'));
+      
+      if (existingSetting) {
+        // Update existing setting
+        await db
+          .update(settings)
+          .set({ 
+            value: shippingFee.toString(),
+            updatedAt: new Date()
+          })
+          .where(eq(settings.key, 'shipping_fee'));
+      } else {
+        // Create new setting
+        await db
+          .insert(settings)
+          .values({
+            key: 'shipping_fee',
+            value: shippingFee.toString()
+          });
+      }
+      
+      res.json({ shippingFee });
+    } catch (error) {
+      console.error("Error updating shipping fee:", error);
+      res.status(500).json({ message: "Failed to update shipping fee" });
     }
   });
 
