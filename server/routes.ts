@@ -227,6 +227,36 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // Get reviews for a product
+  app.get("/api/products/:id/reviews", async (req, res) => {
+    try {
+      const productId = req.params.id;
+      
+      const productReviews = await db
+        .select({
+          id: reviews.id,
+          rating: reviews.rating,
+          comment: reviews.comment,
+          createdAt: reviews.createdAt,
+          isVerified: reviews.isVerified,
+          user: {
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName
+          }
+        })
+        .from(reviews)
+        .leftJoin(users, eq(reviews.userId, users.id))
+        .where(eq(reviews.productId, productId))
+        .orderBy(desc(reviews.createdAt));
+
+      res.json(productReviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
   app.post("/api/products", requireAdmin, upload.array('images', 5), async (req, res) => {
     try {
       const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
@@ -542,10 +572,9 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // Reviews
-  app.post("/api/products/:id/reviews", requireAuth, async (req, res) => {
+  // Check if user can review product
+  app.get("/api/products/:id/can-review", requireAuth, async (req, res) => {
     try {
-      const { rating, comment } = req.body;
       const productId = req.params.id;
       const userId = req.session.user.id;
 
@@ -561,7 +590,57 @@ export function registerRoutes(app: Express) {
         );
 
       if (existingReview) {
-        return res.status(400).json({ message: "You have already reviewed this product" });
+        return res.json({ canReview: false, reason: "Already reviewed" });
+      }
+
+      // Check if user has purchased this product (optional - can be removed if not needed)
+      const hasPurchased = await db
+        .select()
+        .from(orderItems)
+        .leftJoin(orders, eq(orderItems.orderId, orders.id))
+        .where(
+          and(
+            eq(orderItems.productId, productId),
+            eq(orders.userId, userId),
+            eq(orders.status, 'delivered')
+          )
+        )
+        .limit(1);
+
+      res.json({ 
+        canReview: true, 
+        hasPurchased: hasPurchased.length > 0 
+      });
+    } catch (error) {
+      console.error("Error checking review permission:", error);
+      res.status(500).json({ message: "Failed to check review permission" });
+    }
+  });
+
+  // Reviews
+  app.post("/api/products/:id/reviews", requireAuth, async (req, res) => {
+    try {
+      const { rating, comment } = req.body;
+      const productId = req.params.id;
+      const userId = req.session.user.id;
+
+      if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ message: "Rating must be between 1 and 5" });
+      }
+
+      // Check if user already reviewed this product
+      const [existingReview] = await db
+        .select()
+        .from(reviews)
+        .where(
+          and(
+            eq(reviews.productId, productId),
+            eq(reviews.userId, userId)
+          )
+        );
+
+      if (existingReview) {
+        return res.status(400).json({ message: "Bạn đã đánh giá sản phẩm này rồi" });
       }
 
       const [review] = await db
@@ -570,7 +649,7 @@ export function registerRoutes(app: Express) {
           productId,
           userId,
           rating: parseInt(rating),
-          comment
+          comment: comment || null
         })
         .returning();
 

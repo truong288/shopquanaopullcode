@@ -388,8 +388,46 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                       <h3 className="font-semibold">Viết đánh giá của bạn</h3>
                       <ReviewForm 
                         productId={product.id} 
-                        onSuccess={() => setActiveTab("reviews")}
+                        onSuccess={() => {
+                          // Refresh reviews and can-review status
+                          queryClient.invalidateQueries({ 
+                            queryKey: [`/api/products/${product.id}/reviews`] 
+                          });
+                          queryClient.invalidateQueries({ 
+                            queryKey: [`/api/products/${product.id}/can-review`] 
+                          });
+                        }}
                       />
+                      <Separator />
+                    </div>
+                  )}
+
+                  {/* Show message if user cannot review */}
+                  {isAuthenticated && canReviewData && !canReviewData.canReview && (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-secondary/20 rounded-lg text-center">
+                        <p className="text-muted-foreground">
+                          {canReviewData.reason === "Already reviewed" 
+                            ? "Bạn đã đánh giá sản phẩm này rồi"
+                            : "Bạn cần mua sản phẩm này trước khi có thể đánh giá"
+                          }
+                        </p>
+                      </div>
+                      <Separator />
+                    </div>
+                  )}
+
+                  {/* Login prompt for non-authenticated users */}
+                  {!isAuthenticated && (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-secondary/20 rounded-lg text-center">
+                        <p className="text-muted-foreground mb-2">
+                          Đăng nhập để viết đánh giá sản phẩm
+                        </p>
+                        <Button asChild variant="outline" size="sm">
+                          <a href="/api/login">Đăng nhập</a>
+                        </Button>
+                      </div>
                       <Separator />
                     </div>
                   )}

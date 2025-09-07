@@ -39,7 +39,12 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
 
   const createReviewMutation = useMutation({
     mutationFn: async (data: ReviewFormData) => {
-      return apiRequest("POST", `/api/products/${productId}/reviews`, data);
+      const response = await apiRequest("POST", `/api/products/${productId}/reviews`, data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Không thể gửi đánh giá");
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -50,6 +55,11 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
       // Invalidate reviews cache
       queryClient.invalidateQueries({ 
         queryKey: [`/api/products/${productId}/reviews`] 
+      });
+      
+      // Invalidate can-review cache
+      queryClient.invalidateQueries({ 
+        queryKey: [`/api/products/${productId}/can-review`] 
       });
       
       // Invalidate product cache to update rating
