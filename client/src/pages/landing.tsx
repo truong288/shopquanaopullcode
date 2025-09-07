@@ -53,22 +53,68 @@ export default function Landing() {
       />
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary/10 to-accent/10 py-24">
+      <section className="relative bg-gradient-to-br from-gray-50 to-white py-20 lg:py-32">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
-              Thời Trang Hiện Đại
-            </h1>
-            <p className="text-xl mb-8 text-muted-foreground max-w-2xl mx-auto">
-              Khám phá bộ sưu tập thời trang mới nhất với phong cách độc đáo và chất lượng cao
-            </p>
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3"
-              onClick={() => window.location.href = "/products"}
-            >
-              Khám Phá Ngay
-            </Button>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+                  Thời Trang <span className="text-orange-500">Hiện Đại</span><br/>
+                  Phong Cách <span className="text-gray-800">Độc Đáo</span>
+                </h1>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Khám phá bộ sưu tập thời trang mới nhất với chất lượng cao, thiết kế tinh tế và giá cả hợp lý. Tạo nên phong cách riêng của bạn.
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  size="lg" 
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 font-semibold"
+                  onClick={() => window.location.href = "/products"}
+                >
+                  Mua Ngay
+                </Button>
+                <Button 
+                  variant="outline"
+                  size="lg" 
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 font-semibold"
+                  onClick={() => window.location.href = "/products"}
+                >
+                  Xem Bộ Sưu Tập
+                </Button>
+              </div>
+
+              {/* Product Stats */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100 inline-block">
+                <div className="flex items-center space-x-2">
+                  <span className="text-3xl font-bold text-orange-500">50+</span>
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">Sản phẩm mới</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Image */}
+            <div className="relative">
+              <div className="relative bg-gray-100 rounded-3xl overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=1000" 
+                  alt="Fashion Collection"
+                  className="w-full h-[600px] object-cover"
+                />
+              </div>
+              
+              {/* Floating elements */}
+              <div className="absolute -top-4 -right-4 bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-gray-700">Có sẵn</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
