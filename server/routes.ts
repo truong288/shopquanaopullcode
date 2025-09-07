@@ -203,7 +203,7 @@ export function registerRoutes(app: Express) {
       const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
 
       const imageUrls = (req.files as Express.Multer.File[])?.map(file => 
-        `/attached_assets/uploads/${file.filename}`
+        `/api/uploads/${file.filename}`
       ) || [];
 
       const [product] = await db
@@ -249,7 +249,7 @@ export function registerRoutes(app: Express) {
 
       if (req.files && (req.files as Express.Multer.File[]).length > 0) {
         updateData.imageUrls = (req.files as Express.Multer.File[]).map(file => 
-          `/attached_assets/uploads/${file.filename}`
+          `/api/uploads/${file.filename}`
         );
       }
 
@@ -687,6 +687,7 @@ export function registerRoutes(app: Express) {
 
   // Serve uploaded files
   app.use("/attached_assets", express.static(path.join(process.cwd(), "attached_assets")));
+  app.use("/api/uploads", express.static(path.join(process.cwd(), "attached_assets", "uploads")));
 
   return server;
 }
