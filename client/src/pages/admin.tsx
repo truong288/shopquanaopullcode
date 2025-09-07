@@ -36,6 +36,9 @@ const productFormSchema = insertProductSchema.extend({
   imageUrls: z.string().optional(),
   sizes: z.string().optional(),
   colors: z.string().optional(),
+  isNew: z.boolean().optional(),
+  isOnSale: z.boolean().optional(),
+  isComingSoon: z.boolean().optional(),
 }).transform((data) => ({
   ...data,
   description: data.description || "",
@@ -44,6 +47,9 @@ const productFormSchema = insertProductSchema.extend({
   stock: data.stock || 0,
   isActive: data.isActive ?? true,
   isFeatured: data.isFeatured ?? false,
+  isNew: data.isNew ?? false,
+  isOnSale: data.isOnSale ?? false,
+  isComingSoon: data.isComingSoon ?? false,
 }));
 
 type ProductFormData = z.infer<typeof productFormSchema>;
@@ -83,6 +89,9 @@ export default function Admin() {
       stock: 0,
       isActive: true,
       isFeatured: false,
+      isNew: false,
+      isOnSale: false,
+      isComingSoon: false,
     },
   });
 
@@ -243,6 +252,9 @@ export default function Admin() {
         formData.append('sizes', data.sizes);
         formData.append('colors', data.colors);
         formData.append('isFeatured', data.isFeatured.toString());
+        formData.append('isNew', data.isNew.toString());
+        formData.append('isOnSale', data.isOnSale.toString());
+        formData.append('isComingSoon', data.isComingSoon.toString());
 
         if (productImages && productImages.length > 0) {
           formData.append('imageUrls', JSON.stringify(productImages));
@@ -899,42 +911,105 @@ export default function Admin() {
                           />
                         </div>
 
-                        <div className="flex items-center space-x-4">
-                          <FormField
-                            control={productForm.control}
-                            name="isActive"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2">
-                                <FormControl>
-                                  <input
-                                    type="checkbox"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                    className="rounded border-border"
-                                  />
-                                </FormControl>
-                                <FormLabel className="!mt-0">Kích hoạt</FormLabel>
-                              </FormItem>
-                            )}
-                          />
+                        <div>
+                          <Label className="text-base font-semibold mb-3 block">Trạng thái sản phẩm</Label>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                              <FormField
+                                control={productForm.control}
+                                name="isNew"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center space-x-2">
+                                    <FormControl>
+                                      <input
+                                        type="checkbox"
+                                        checked={field.value}
+                                        onChange={field.onChange}
+                                        className="rounded border-border"
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="!mt-0">Sản phẩm mới</FormLabel>
+                                  </FormItem>
+                                )}
+                              />
 
-                          <FormField
-                            control={productForm.control}
-                            name="isFeatured"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2">
-                                <FormControl>
-                                  <input
-                                    type="checkbox"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                    className="rounded border-border"
-                                  />
-                                </FormControl>
-                                <FormLabel className="!mt-0">Sản phẩm nổi bật</FormLabel>
-                              </FormItem>
-                            )}
-                          />
+                              <FormField
+                                control={productForm.control}
+                                name="isFeatured"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center space-x-2">
+                                    <FormControl>
+                                      <input
+                                        type="checkbox"
+                                        checked={field.value}
+                                        onChange={field.onChange}
+                                        className="rounded border-border"
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="!mt-0">Nổi bật</FormLabel>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            <div className="space-y-3">
+                              <FormField
+                                control={productForm.control}
+                                name="isOnSale"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center space-x-2">
+                                    <FormControl>
+                                      <input
+                                        type="checkbox"
+                                        checked={field.value}
+                                        onChange={field.onChange}
+                                        className="rounded border-border"
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="!mt-0">Đang sale</FormLabel>
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={productForm.control}
+                                name="isComingSoon"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center space-x-2">
+                                    <FormControl>
+                                      <input
+                                        type="checkbox"
+                                        checked={field.value}
+                                        onChange={field.onChange}
+                                        className="rounded border-border"
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="!mt-0">Sắp ra mắt</FormLabel>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="mt-4">
+                            <FormField
+                              control={productForm.control}
+                              name="isActive"
+                              render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2">
+                                  <FormControl>
+                                    <input
+                                      type="checkbox"
+                                      checked={field.value}
+                                      onChange={field.onChange}
+                                      className="rounded border-border"
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="!mt-0">Kích hoạt sản phẩm</FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
 
                         <div className="flex justify-end space-x-4 pt-4">
@@ -1030,6 +1105,9 @@ export default function Admin() {
                                       stock: product.stock || 0,
                                       isActive: product.isActive ?? true,
                                       isFeatured: product.isFeatured ?? false,
+                                      isNew: (product as any).isNew ?? false,
+                                      isOnSale: (product as any).isOnSale ?? false,
+                                      isComingSoon: (product as any).isComingSoon ?? false,
                                     });
                                     setIsProductModalOpen(true);
                                   }}

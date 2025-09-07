@@ -1,4 +1,3 @@
-
 import { pgTable, text, integer, timestamp, boolean, varchar, numeric, pgEnum } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -42,6 +41,9 @@ export const products = pgTable("products", {
   stock: integer().default(0),
   isActive: boolean("is_active").default(true),
   isFeatured: boolean("is_featured").default(false),
+  isNew: boolean("is_new").default(false),
+  isOnSale: boolean("is_on_sale").default(false),
+  isComingSoon: boolean("is_coming_soon").default(false),
   rating: numeric({ precision: 2, scale: 1 }).default('0'),
   reviewCount: integer("review_count").default(0),
   createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
@@ -129,7 +131,14 @@ export type InsertReview = typeof reviews.$inferInsert;
 
 // Zod validation schemas
 export const insertUserSchema = createInsertSchema(users);
-export const insertProductSchema = createInsertSchema(products);
+export const insertProductSchema = createInsertSchema(products, {
+  price: z.string().min(1, "Price is required"),
+  name: z.string().min(1, "Name is required"),
+  stock: z.number().min(0, "Stock must be non-negative"),
+  isNew: z.boolean().optional(),
+  isOnSale: z.boolean().optional(),
+  isComingSoon: z.boolean().optional(),
+});
 export const insertCategorySchema = createInsertSchema(categories);
 export const insertCartItemSchema = createInsertSchema(cartItems);
 export const insertOrderSchema = createInsertSchema(orders);

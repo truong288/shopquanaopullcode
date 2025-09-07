@@ -334,7 +334,7 @@ export function registerRoutes(app: Express) {
 
   app.post("/api/products", requireAdmin, upload.array('images', 5), async (req, res) => {
     try {
-      const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured, imageUrls } = req.body;
+      const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured, isNew, isOnSale, isComingSoon, imageUrls } = req.body;
 
       // Use existing imageUrls if provided, otherwise use uploaded files
       let finalImageUrls = [];
@@ -378,6 +378,9 @@ export function registerRoutes(app: Express) {
           colors: colors ? (typeof colors === 'string' ? colors.split(',').map(c => c.trim()) : colors) : [],
           imageUrls: finalImageUrls,
           isFeatured: isFeatured === 'true',
+          isNew: isNew === 'true',
+          isOnSale: isOnSale === 'true',
+          isComingSoon: isComingSoon === 'true',
           rating: "0",
           reviewCount: 0
         })
@@ -392,7 +395,7 @@ export function registerRoutes(app: Express) {
 
   app.put("/api/products/:id", requireAdmin, async (req, res) => {
     try {
-      const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured, imageUrls } = req.body;
+      const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured, isNew, isOnSale, isComingSoon, imageUrls } = req.body;
 
       // Generate slug from name with Vietnamese character support
       const slug = name.toLowerCase()
@@ -415,7 +418,10 @@ export function registerRoutes(app: Express) {
         stock: parseInt(stock),
         sizes: sizes ? (typeof sizes === 'string' ? sizes.split(',').map(s => s.trim()) : sizes) : [],
         colors: colors ? (typeof colors === 'string' ? colors.split(',').map(c => c.trim()) : colors) : [],
-        isFeatured: isFeatured === true || isFeatured === 'true'
+        isFeatured: isFeatured === true || isFeatured === 'true',
+        isNew: isNew === true || isNew === 'true',
+        isOnSale: isOnSale === true || isOnSale === 'true',
+        isComingSoon: isComingSoon === true || isComingSoon === 'true'
       };
 
       // Handle image URLs - directly use the provided imageUrls array
