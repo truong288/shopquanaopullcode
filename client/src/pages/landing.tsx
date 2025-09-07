@@ -9,6 +9,7 @@ import type { Product, Category } from "@shared/schema";
 
 export default function Landing() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
@@ -19,7 +20,22 @@ export default function Landing() {
   });
 
   const { data: allProducts } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+    queryKey: ["/api/products", selectedCategory === "all" ? "" : selectedCategory],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedCategory !== "all" && selectedCategory) {
+        params.append('categoryId', selectedCategory);
+      }
+      
+      const url = `/api/products${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url, { credentials: "include" });
+      
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
   });
 
   const { data: searchResults } = useQuery<Product[]>({
@@ -94,6 +110,7 @@ export default function Landing() {
                 key={category.id} 
                 className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300"
                 data-testid={`card-category-${category.slug}`}
+                onClick={() => setSelectedCategory(category.id)}
               >
                 <div className="relative">
                   <img 
@@ -109,6 +126,36 @@ export default function Landing() {
                 </div>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Category Filter Section */}
+      <section className="py-8 bg-background border-b">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <h3 className="text-lg font-semibold">Lọc theo danh mục:</h3>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedCategory === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory("all")}
+                className="rounded-full"
+              >
+                Tất cả danh mục
+              </Button>
+              {categories?.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category.id)}
+                  className="rounded-full"
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -155,65 +202,94 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Products Section */}
       <section id="products" className="py-16">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <div>
-              <h2 className="text-3xl font-bold mb-2">Sản Phẩm Nổi Bật</h2>
-              <p className="text-muted-foreground">Những sản phẩm được yêu thích nhất</p>
+              <h2 className="text-3xl font-bold mb-2">
+                {selectedCategory === "all" ? "Sản Phẩm Nổi Bật" : `Sản Phẩm - ${categories?.find(c => c.id === selectedCategory)?.name || "Danh Mục"}`}
+              </h2>
+              <p className="text-muted-foreground">
+                {selectedCategory === "all" ? "Những sản phẩm được yêu thích nhất" : "Sản phẩm trong danh mục được chọn"}
+              </p>
             </div>
             <Button 
               variant="link" 
               className="text-primary hover:text-primary/80 font-semibold"
               data-testid="button-view-all-products"
+              onClick={() => window.location.href = `/products${selectedCategory !== "all" ? `?category=${selectedCategory}` : ""}`}
             >
               Xem Tất Cả
               <i className="fas fa-arrow-right ml-2"></i>
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {(searchQuery.length > 2 ? searchResults : featuredProducts)?.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product}
-                data-testid={`card-product-${product.id}`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Latest Products */}
-      <section className="py-16 bg-secondary/10">
-        <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Sản Phẩm Mới Nhất</h2>
-              <p className="text-muted-foreground">Khám phá những sản phẩm vừa được thêm vào</p>
+          {/* Show filtered products or search results */}
+          {searchQuery.length > 2 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {searchResults?.map((product) => (
+                <ProductCard 
+                  key={product.id} 
+                  product={product}
+                  data-testid={`card-search-product-${product.id}`}
+                />
+              ))}
             </div>
-            <Button 
-              variant="link" 
-              className="text-primary hover:text-primary/80 font-semibold"
-              data-testid="button-view-all-latest-products"
-            >
-              Xem Tất Cả
-              →
-            </Button>
-          </div>
+          ) : selectedCategory === "all" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {featuredProducts?.map((product) => (
+                <ProductCard 
+                  key={product.id} 
+                  product={product}
+                  data-testid={`card-featured-product-${product.id}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <div>
+              {allProducts?.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">📦</div>
+                  <h3 className="text-2xl font-semibold mb-2">Không có sản phẩm</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Hiện tại chưa có sản phẩm nào trong danh mục "{categories?.find(c => c.id === selectedCategory)?.name}".
+                  </p>
+                  <Button 
+                    onClick={() => setSelectedCategory("all")}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Xem tất cả sản phẩm
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {allProducts?.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product}
+                      data-testid={`card-category-product-${product.id}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {allProducts?.slice(0, 8).map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product}
-                data-testid={`card-latest-product-${product.id}`}
-              />
-            ))}
-          </div>
+          {/* Empty state for search */}
+          {searchQuery.length > 2 && (!searchResults || searchResults.length === 0) && (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="text-2xl font-semibold mb-2">Không tìm thấy sản phẩm</h3>
+              <p className="text-muted-foreground">
+                Không có sản phẩm nào khớp với từ khóa "{searchQuery}".
+              </p>
+            </div>
+          )}
         </div>
       </section>
+
+      
 
       <Footer />
     </div>
