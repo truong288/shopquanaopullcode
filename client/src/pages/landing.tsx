@@ -26,14 +26,14 @@ export default function Landing() {
       if (selectedCategory !== "all" && selectedCategory) {
         params.append('categoryId', selectedCategory);
       }
-      
+
       const url = `/api/products${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url, { credentials: "include" });
-      
+
       if (!response.ok) {
         throw new Error(`${response.status}: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
   });
@@ -51,7 +51,7 @@ export default function Landing() {
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
       />
-      
+
       {/* Hero Section */}
       <section id="home" className="relative">
         <div className="bg-gradient-to-br from-primary/5 to-accent/5 py-20 lg:py-32">
@@ -135,7 +135,7 @@ export default function Landing() {
         </div>
       </section>
 
-      
+
 
       {/* New Products */}
       <section className="py-16 bg-gradient-to-r from-green-50 to-blue-50">
@@ -166,7 +166,7 @@ export default function Landing() {
               />
             ))}
           </div>
-          
+
           {(!allProducts?.filter(product => product.isNew || product.isFeatured).length) && (
             <div className="text-center py-16">
               <div className="text-4xl mb-4">✨</div>
@@ -211,7 +211,7 @@ export default function Landing() {
               />
             ))}
           </div>
-          
+
           {(!allProducts?.filter(product => 
             product.isOnSale || 
             (product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price))
@@ -225,7 +225,7 @@ export default function Landing() {
             </div>
           )}
         </div>
-      </section></old_str>
+      </section>
 
       {/* Products Section */}
       <section id="products" className="py-16">
@@ -331,11 +331,9 @@ export default function Landing() {
             </div>
           )}
 
-          
+
         </div>
       </section>
-
-      
 
       <Footer />
     </div>
