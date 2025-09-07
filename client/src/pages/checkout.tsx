@@ -106,6 +106,10 @@ export default function Checkout() {
     enabled: isAuthenticated,
   });
 
+  const { data: shippingFeeData } = useQuery<{ shippingFee: number }>({
+    queryKey: ["/api/settings/shipping-fee"],
+  });
+
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
       return await apiRequest("POST", "/api/orders", orderData);
@@ -175,7 +179,7 @@ export default function Checkout() {
     (sum, item) => sum + parseFloat(item.product.price) * item.quantity,
     0,
   );
-  const shippingFee = 30000;
+  const shippingFee = shippingFeeData?.shippingFee || 30000;
   const total = subtotal + shippingFee;
 
   const handleSubmit = (e: React.FormEvent) => {

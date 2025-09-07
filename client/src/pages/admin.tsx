@@ -130,6 +130,45 @@ export default function Admin() {
     enabled: isAuthenticated && user?.role === 'admin',
   });
 
+  const { data: shippingFeeData } = useQuery<{ shippingFee: number }>({
+    queryKey: ["/api/settings/shipping-fee"],
+    enabled: isAuthenticated && user?.role === 'admin',
+  });
+
+  const [newShippingFee, setNewShippingFee] = useState("");
+
+  const updateShippingFeeMutation = useMutation({
+    mutationFn: async (shippingFee: number) => {
+      return await apiRequest("PUT", "/api/admin/settings/shipping-fee", { shippingFee });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Cập nhật thành công",
+        description: "Phí vận chuyển đã được cập nhật.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/settings/shipping-fee"] });
+      setNewShippingFee("");
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Lỗi",
+        description: "Không thể cập nhật phí vận chuyển.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const updateOrderStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
       return await apiRequest("PUT", `/api/orders/${orderId}/status`, { status });
@@ -409,6 +448,18 @@ export default function Admin() {
           >
             <i className="fas fa-users mr-3"></i>
             Quản Lý Khách Hàng
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
+              activeTab === "settings" 
+                ? "text-foreground bg-primary/10 border-r-2 border-primary" 
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            }`}
+            data-testid="nav-settings"
+          >
+            <i className="fas fa-cog mr-3"></i>
+            Cài Đặt
           </button>
         </nav>
       </div>
@@ -1048,6 +1099,70 @@ export default function Admin() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Settings Management */}
+          {activeTab === "settings" && (
+            <div>
+              <h1 className="text-3xl font-bold mb-8">Cài Đặt Hệ Thống</h1>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Phí Vận Chuyển</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-lg">
+                    <div>
+                      <div className="font-semibold">Phí vận chuyển hiện tại</div>
+                      <div className="text-muted-foreground">Phí áp dụng cho tất cả đơn hàng</div>
+                    </div>
+                    <div className="text-2xl font-bold text-primary">
+                      {shippingFeeData?.shippingFee?.toLocaleString() || '30,000'}₫
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="shipping-fee">Phí vận chuyển mới (VNĐ)</Label>
+                      <div className="flex space-x-2 mt-2">
+                        <Input
+                          id="shipping-fee"
+                          type="number"
+                          placeholder="30000"
+                          value={newShippingFee}
+                          onChange={(e) => setNewShippingFee(e.target.value)}
+                          className="flex-1"
+                          data-testid="input-shipping-fee"
+                        />
+                        <Button
+                          onClick={() => {
+                            const fee = parseInt(newShippingFee);
+                            if (fee && fee >= 0) {
+                              updateShippingFeeMutation.mutate(fee);
+                            } else {
+                              toast({
+                                title: "Lỗi",
+                                description: "Vui lòng nhập số tiền hợp lệ.",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                          disabled={updateShippingFeeMutation.isPending || !newShippingFee}
+                          data-testid="button-update-shipping-fee"
+                        >
+                          {updateShippingFeeMutation.isPending ? "Đang cập nhật..." : "Cập nhật"}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm text-muted-foreground">
+                      <i className="fas fa-info-circle mr-2"></i>
+                      Phí vận chuyển sẽ được áp dụng cho tất cả đơn hàng mới sau khi cập nhật.
+                    </div>
                   </div>
                 </CardContent>
               </Card>
