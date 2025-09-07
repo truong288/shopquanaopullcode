@@ -24,7 +24,7 @@ export default function Landing() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCategory !== "all" && selectedCategory) {
-        params.append('categoryId', selectedCategory);
+        params.append('category', selectedCategory);
       }
       
       const url = `/api/products${params.toString() ? '?' + params.toString() : ''}`;
