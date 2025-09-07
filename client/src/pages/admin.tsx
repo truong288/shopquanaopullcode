@@ -249,6 +249,68 @@ export default function Admin() {
     },
   });
 
+  const updateUserRoleMutation = useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+      return await apiRequest("PUT", `/api/admin/users/${userId}/role`, { role });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Cập nhật thành công",
+        description: "Vai trò người dùng đã được cập nhật.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Lỗi",
+        description: "Không thể cập nhật vai trò người dùng.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await apiRequest("DELETE", `/api/admin/users/${userId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Xóa thành công",
+        description: "Tài khoản người dùng đã được xóa.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Lỗi",
+        description: "Không thể xóa tài khoản người dùng.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmitProduct = (data: ProductFormData) => {
     // Generate slug from name if not provided
     if (!data.slug) {
@@ -909,6 +971,7 @@ export default function Admin() {
                           <th className="text-left py-3 px-4">Email</th>
                           <th className="text-left py-3 px-4">Vai Trò</th>
                           <th className="text-left py-3 px-4">Ngày Tham Gia</th>
+                          <th className="text-left py-3 px-4">Thao Tác</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -936,6 +999,50 @@ export default function Admin() {
                             </td>
                             <td className="py-3 px-4 text-muted-foreground">
                               {new Date(user.createdAt!).toLocaleDateString('vi-VN')}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex space-x-2">
+                                {user.role === 'customer' ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-primary hover:bg-primary/10"
+                                    onClick={() => updateUserRoleMutation.mutate({ userId: user.id, role: 'admin' })}
+                                    disabled={updateUserRoleMutation.isPending}
+                                    data-testid={`button-promote-user-${user.id}`}
+                                  >
+                                    <i className="fas fa-user-shield mr-1"></i>
+                                    Làm Admin
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-orange-600 hover:bg-orange-50"
+                                    onClick={() => updateUserRoleMutation.mutate({ userId: user.id, role: 'customer' })}
+                                    disabled={updateUserRoleMutation.isPending}
+                                    data-testid={`button-demote-user-${user.id}`}
+                                  >
+                                    <i className="fas fa-user mr-1"></i>
+                                    Hủy Admin
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-destructive hover:bg-destructive/10"
+                                  onClick={() => {
+                                    if (window.confirm(`Bạn có chắc chắn muốn xóa tài khoản của ${user.firstName} ${user.lastName}?`)) {
+                                      deleteUserMutation.mutate(user.id);
+                                    }
+                                  }}
+                                  disabled={deleteUserMutation.isPending}
+                                  data-testid={`button-delete-user-${user.id}`}
+                                >
+                                  <i className="fas fa-trash mr-1"></i>
+                                  Xóa
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         ))}

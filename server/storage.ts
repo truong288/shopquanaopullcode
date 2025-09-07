@@ -28,14 +28,14 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Category operations
   getCategories(): Promise<Category[]>;
   getCategory(id: string): Promise<Category | undefined>;
   createCategory(category: InsertCategory): Promise<Category>;
   updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category>;
   deleteCategory(id: string): Promise<void>;
-  
+
   // Product operations
   getProducts(categoryId?: string, limit?: number, offset?: number): Promise<Product[]>;
   getFeaturedProducts(): Promise<Product[]>;
@@ -45,26 +45,26 @@ export interface IStorage {
   updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product>;
   deleteProduct(id: string): Promise<void>;
   searchProducts(query: string): Promise<Product[]>;
-  
+
   // Cart operations
   getCartItems(userId: string): Promise<(CartItem & { product: Product })[]>;
   addToCart(cartItem: InsertCartItem): Promise<CartItem>;
   updateCartItem(id: string, quantity: number): Promise<CartItem>;
   removeFromCart(id: string): Promise<void>;
   clearCart(userId: string): Promise<void>;
-  
+
   // Order operations
   getOrders(userId?: string): Promise<(Order & { items: (OrderItem & { product: Product })[] })[]>;
   getOrder(id: string): Promise<(Order & { items: (OrderItem & { product: Product })[] }) | undefined>;
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
   updateOrderStatus(id: string, status: string): Promise<Order>;
-  
+
   // Review operations
   getProductReviews(productId: string): Promise<(Review & { user: Pick<User, 'id' | 'firstName' | 'lastName'> })[]>;
   createReview(review: InsertReview): Promise<Review>;
   updateProductRating(productId: string): Promise<void>;
   canUserReview(userId: string, productId: string): Promise<boolean>;
-  
+
   // Admin operations
   getOrdersAdmin(): Promise<(Order & { items: (OrderItem & { product: Product })[] })[]>;
   getUsersAdmin(): Promise<User[]>;
@@ -74,6 +74,8 @@ export interface IStorage {
     totalCustomers: number;
     totalProducts: number;
   }>;
+  updateUserRole(userId: string, role: string): Promise<User>;
+  deleteUser(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -129,11 +131,11 @@ export class DatabaseStorage implements IStorage {
   // Product operations
   async getProducts(categoryId?: string, limit = 50, offset = 0): Promise<Product[]> {
     let query = db.select().from(products).where(eq(products.isActive, true));
-    
+
     if (categoryId) {
       query = query.where(eq(products.categoryId, categoryId));
     }
-    
+
     return await query.limit(limit).offset(offset).orderBy(desc(products.createdAt));
   }
 
@@ -216,7 +218,7 @@ export class DatabaseStorage implements IStorage {
       // Update quantity
       const [updated] = await db
         .update(cartItems)
-        .set({ 
+        .set({
           quantity: existing.quantity + cartItem.quantity,
           updatedAt: new Date()
         })
@@ -250,13 +252,13 @@ export class DatabaseStorage implements IStorage {
   // Order operations
   async getOrders(userId?: string): Promise<(Order & { items: (OrderItem & { product: Product })[] })[]> {
     let orderQuery = db.select().from(orders);
-    
+
     if (userId) {
       orderQuery = orderQuery.where(eq(orders.userId, userId));
     }
-    
+
     const ordersList = await orderQuery.orderBy(desc(orders.createdAt));
-    
+
     const ordersWithItems = await Promise.all(
       ordersList.map(async (order) => {
         const items = await db
@@ -265,35 +267,35 @@ export class DatabaseStorage implements IStorage {
           .innerJoin(products, eq(orderItems.productId, products.id))
           .where(eq(orderItems.orderId, order.id))
           .then(rows => rows.map(row => ({ ...row.order_items, product: row.products })));
-        
+
         return { ...order, items };
       })
     );
-    
+
     return ordersWithItems;
   }
 
   async getOrder(id: string): Promise<(Order & { items: (OrderItem & { product: Product })[] }) | undefined> {
     const [order] = await db.select().from(orders).where(eq(orders.id, id));
-    
+
     if (!order) return undefined;
-    
+
     const items = await db
       .select()
       .from(orderItems)
       .innerJoin(products, eq(orderItems.productId, products.id))
       .where(eq(orderItems.orderId, order.id))
       .then(rows => rows.map(row => ({ ...row.order_items, product: row.products })));
-    
+
     return { ...order, items };
   }
 
   async createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order> {
     const [newOrder] = await db.insert(orders).values(order).returning();
-    
+
     const orderItemsWithOrderId = items.map(item => ({ ...item, orderId: newOrder.id }));
     await db.insert(orderItems).values(orderItemsWithOrderId);
-    
+
     return newOrder;
   }
 
@@ -431,6 +433,35 @@ export class DatabaseStorage implements IStorage {
       totalCustomers: customerStats?.count || 0,
       totalProducts: productStats?.count || 0,
     };
+  }
+
+  async updateUserRole(userId: string, role: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+
+    return updatedUser;
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    // Delete user's related data first
+    await db.delete(cartItems).where(eq(cartItems.userId, userId));
+    await db.delete(reviews).where(eq(reviews.userId, userId));
+
+    // Update orders to keep them but remove user reference
+    await db
+      .update(orders)
+      .set({ userId: null })
+      .where(eq(orders.userId, userId));
+
+    // Finally delete the user
+    await db.delete(users).where(eq(users.id, userId));
   }
 }
 
