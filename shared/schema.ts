@@ -56,7 +56,7 @@ export const orders = pgTable("orders", {
   total: text("total").notNull(),
   status: text("status").default("pending").notNull(),
   shippingAddress: text("shipping_address").notNull(),
-  phoneNumber: text("phone_number").notNull(),
+  customerPhone: text("customer_phone").notNull(),
   notes: text("notes"),
   province: text("province"),
   district: text("district"),

@@ -469,7 +469,7 @@ export function registerRoutes(app: Express) {
     try {
       const { 
         shippingAddress, 
-        phoneNumber, 
+        customerPhone, 
         notes,
         province,
         district, 
@@ -507,7 +507,7 @@ export function registerRoutes(app: Express) {
           total: total.toString(),
           status: "pending",
           shippingAddress,
-          phoneNumber,
+          customerPhone,
           notes,
           province,
           district,
