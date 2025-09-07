@@ -560,6 +560,30 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // Auth routes
+  app.get("/api/auth/user", async (req, res) => {
+    if (!req.session?.user) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      // Get user from database
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.session.user.claims.sub));
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // Users (Admin)
   app.get("/api/users", requireAdmin, async (req, res) => {
     try {
