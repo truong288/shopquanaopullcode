@@ -725,6 +725,27 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // Update order status
+  app.put("/api/orders/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const { status } = req.body;
+      const [order] = await db
+        .update(orders)
+        .set({ status })
+        .where(eq(orders.id, req.params.id))
+        .returning();
+
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      res.json(order);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
   app.put("/api/admin/orders/:id/status", requireAdmin, async (req, res) => {
     try {
       const { status } = req.body;
@@ -742,6 +763,46 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error updating order status:", error);
       res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
+  // Dashboard stats
+  app.get("/api/admin/dashboard", requireAdmin, async (req, res) => {
+    try {
+      // Get total orders
+      const totalOrdersResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(orders);
+      const totalOrders = totalOrdersResult[0]?.count || 0;
+
+      // Get total revenue
+      const totalRevenueResult = await db
+        .select({ sum: sql<string>`sum(${orders.total})` })
+        .from(orders)
+        .where(eq(orders.status, 'delivered'));
+      const totalRevenue = parseFloat(totalRevenueResult[0]?.sum || '0');
+
+      // Get total customers
+      const totalCustomersResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users);
+      const totalCustomers = totalCustomersResult[0]?.count || 0;
+
+      // Get total products
+      const totalProductsResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(products);
+      const totalProducts = totalProductsResult[0]?.count || 0;
+
+      res.json({
+        totalOrders,
+        totalRevenue,
+        totalCustomers,
+        totalProducts
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
     }
   });
 
