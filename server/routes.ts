@@ -265,10 +265,18 @@ export function registerRoutes(app: Express) {
         `/api/uploads/${file.filename}`
       ) || [];
 
+      // Generate slug from name
+      const slug = name.toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-')
+        .trim();
+
       const [product] = await db
         .insert(products)
         .values({
           name,
+          slug,
           description,
           price,
           originalPrice: originalPrice || null,
@@ -294,8 +302,16 @@ export function registerRoutes(app: Express) {
     try {
       const { name, description, price, originalPrice, categoryId, stock, sizes, colors, isFeatured } = req.body;
 
+      // Generate slug from name
+      const slug = name.toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-')
+        .trim();
+
       const updateData: any = {
         name,
+        slug,
         description,
         price,
         originalPrice: originalPrice || null,
