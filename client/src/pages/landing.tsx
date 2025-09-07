@@ -53,19 +53,19 @@ export default function Landing() {
       />
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-pink-50 via-orange-50 to-yellow-50 py-16 lg:py-24 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-gray-50 to-white py-16 lg:py-24">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[600px]">
             {/* Left Content */}
-            <div className="space-y-8 z-10">
+            <div className="space-y-8 relative">
               <div className="space-y-6">
-                <h1 className="text-4xl lg:text-6xl xl:text-7xl font-bold leading-tight">
-                  <span className="text-gray-900">Thời Trang</span> <br/>
+                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
+                  <span className="text-gray-900">Thời Trang</span><br/>
                   <span className="text-orange-500">Hiện Đại</span><br/>
                   <span className="text-gray-900">Phong Cách</span><br/>
                   <span className="text-gray-900">Độc Đáo</span>
                 </h1>
-                <p className="text-lg lg:text-xl text-gray-600 leading-relaxed max-w-lg">
+                <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
                   Khám phá bộ sưu tập thời trang mới nhất với chất lượng cao, thiết kế tinh tế và giá cả hợp lý. Tạo nên phong cách riêng của bạn.
                 </p>
               </div>
@@ -73,7 +73,7 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   size="lg" 
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 text-lg font-semibold rounded-full"
                   onClick={() => window.location.href = "/products"}
                 >
                   Mua Ngay
@@ -81,15 +81,35 @@ export default function Landing() {
                 <Button 
                   variant="outline"
                   size="lg" 
-                  className="border-2 border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white px-10 py-4 text-lg font-semibold rounded-full transition-all duration-300"
+                  className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 text-lg font-semibold rounded-full"
                   onClick={() => window.location.href = "/products"}
                 >
                   Xem Bộ Sưu Tập
                 </Button>
               </div>
+            </div>
 
-              {/* Product Stats Card */}
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50 inline-block">
+            {/* Right Image Section */}
+            <div className="relative h-[500px] lg:h-[600px]">
+              {/* Main Fashion Image */}
+              <div className="relative bg-gray-100 rounded-3xl overflow-hidden shadow-xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=1200" 
+                  alt="Fashion Collection - Women's Clothing"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              {/* Floating Status Badge */}
+              <div className="absolute -top-4 -right-4 bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-gray-700">Có sẵn</span>
+                </div>
+              </div>
+
+              {/* Product Stats Card - Positioned as in original design */}
+              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
                 <div className="flex items-center space-x-3">
                   <span className="text-4xl font-bold text-orange-500">50+</span>
                   <div>
@@ -98,39 +118,8 @@ export default function Landing() {
                 </div>
               </div>
             </div>
-
-            {/* Right Image Section */}
-            <div className="relative h-[500px] lg:h-[600px]">
-              {/* Main Fashion Image */}
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-100 to-pink-100 rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=1200" 
-                  alt="Fashion Collection - Women's Clothing"
-                  className="w-full h-full object-cover"
-                />
-                
-                {/* Overlay with soft gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-              </div>
-              
-              {/* Floating Status Badge */}
-              <div className="absolute -top-6 -right-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-100">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-semibold text-gray-800">Có sẵn</span>
-                </div>
-              </div>
-
-              {/* Floating Fashion Elements */}
-              <div className="absolute -left-8 top-1/4 w-24 h-24 bg-orange-500/10 rounded-full blur-xl"></div>
-              <div className="absolute -right-6 bottom-1/3 w-32 h-32 bg-pink-500/10 rounded-full blur-2xl"></div>
-            </div>
           </div>
         </div>
-        
-        {/* Background decorative elements */}
-        <div className="absolute top-10 right-10 w-72 h-72 bg-gradient-to-r from-orange-200/30 to-pink-200/30 rounded-full blur-3xl -z-10"></div>
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-gradient-to-r from-yellow-200/20 to-orange-200/20 rounded-full blur-3xl -z-10"></div>
       </section>
 
       {/* Featured Categories */}
