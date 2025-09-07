@@ -939,6 +939,12 @@ export function registerRoutes(app: Express) {
       }
 
       const imageUrl = `/api/uploads/${req.file.filename}`;
+      console.log("Image uploaded:", {
+        originalName: req.file.originalname,
+        filename: req.file.filename,
+        url: imageUrl,
+        size: req.file.size
+      });
       res.json({ url: imageUrl });
     } catch (error) {
       console.error("Error uploading image:", error);

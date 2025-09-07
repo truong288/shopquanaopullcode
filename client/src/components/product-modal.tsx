@@ -114,8 +114,10 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   // Default images if product doesn't have images
   const images = product.imageUrls && product.imageUrls.length > 0 
-    ? product.imageUrls 
-    : ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=600"];
+    ? product.imageUrls
+    : ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500"];
+
+  console.log("Product images for", product.name, ":", product.imageUrls);
 
   // Default sizes and colors if not specified
   const sizes = product.sizes && product.sizes.length > 0 ? product.sizes : ["S", "M", "L", "XL"];
