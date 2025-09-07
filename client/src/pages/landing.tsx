@@ -55,7 +55,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-gray-50 to-white py-16 lg:py-24">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[600px]">
+          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[500px]">
             {/* Left Content */}
             <div className="space-y-8 relative">
               <div className="space-y-6">
@@ -90,7 +90,7 @@ export default function Landing() {
             </div>
 
             {/* Right Image Section */}
-            <div className="relative h-[500px] lg:h-[600px]">
+            <div className="relative h-[400px] lg:h-[450px]">
               {/* Main Fashion Image */}
               <div className="relative bg-gray-100 rounded-3xl overflow-hidden shadow-xl">
                 <img 
