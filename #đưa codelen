@@ -1,0 +1,4 @@
+#lệnh 1 chạy 
+#git remote set-url origin https://<your-username>:<your-token>@github.com/truong288/shopquanaopullcode.git
+#lệnh 2 chạy 
+#git push -u origin main
